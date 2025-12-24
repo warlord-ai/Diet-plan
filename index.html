@@ -244,6 +244,7 @@
             animation: slideUpSheet 0.35s cubic-bezier(0.19, 1, 0.22, 1);
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
             border-top: 1px solid var(--glass-border);
+            overscroll-behavior: contain; /* Prevents body scroll chaining/jiggling */
         }
         @keyframes slideUpSheet { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
@@ -258,6 +259,7 @@
             top: 0;
             background: #121212;
             z-index: 10;
+            touch-action: none; /* Prevents browser handling */
         }
         .modal-handle {
             width: 36px;
@@ -1074,6 +1076,66 @@
         document.getElementById('day-modal').classList.remove('active');
         document.body.style.overflow = ''; // Unlock scroll
     }
+
+    // --- SWIPE TO CLOSE LOGIC (NEW) ---
+    const modalSheet = document.querySelector('.modal-sheet');
+    const modalBody = document.getElementById('modal-body-content');
+    
+    let startY = 0;
+    let currentTranslateY = 0;
+    let isDragging = false;
+
+    // Handle touch start
+    modalSheet.addEventListener('touchstart', (e) => {
+        // Allow scroll if content is not at top
+        if (modalSheet.scrollTop > 0) return;
+        
+        isDragging = true;
+        startY = e.touches[0].clientY;
+        modalSheet.style.transition = 'none'; // Disable transition for direct 1:1 movement
+    }, { passive: true });
+
+    // Handle touch move
+    modalSheet.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        
+        const currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+
+        // Only move if dragging down
+        if (diff > 0) {
+            // If content is scrollable and we are at top, prevent default to stop scrolling
+            // and start moving the sheet
+            if(e.cancelable && modalSheet.scrollTop <= 0) {
+                e.preventDefault(); 
+            }
+            
+            currentTranslateY = diff;
+            modalSheet.style.transform = `translateY(${diff}px)`;
+        }
+    }, { passive: false });
+
+    // Handle touch end
+    modalSheet.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        // Restore transition for smooth snap/close
+        modalSheet.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+
+        if (currentTranslateY > 150) {
+            // Dragged far enough: Close
+            modalSheet.style.transform = 'translateY(100%)';
+            setTimeout(() => {
+                closeDayModal();
+                modalSheet.style.transform = ''; // Reset for next open
+            }, 300);
+        } else {
+            // Snap back
+            modalSheet.style.transform = '';
+        }
+        currentTranslateY = 0;
+    });
 
     // --- TIMER LOGIC (COUNTDOWN + RING + ALARM) ---
     const GOAL_MINUTES = 45;
