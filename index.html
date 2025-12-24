@@ -214,52 +214,76 @@
         .badge-info { color: var(--fitness-cyan); background-color: rgba(0, 224, 255, 0.15); border: 1px solid rgba(0, 224, 255, 0.2); }
         .badge-cal { color: var(--fitness-red); border: 1px solid rgba(250, 17, 79, 0.3); background: rgba(250, 17, 79, 0.05); }
 
-        /* FULL SCREEN MODAL (SHEET STYLE) */
+        /* FULL SCREEN MODAL (SHEET STYLE) - IMPROVED TRANSITIONS & SCROLLING */
         .day-modal {
             position: fixed;
             top: 0; left: 0;
             width: 100vw;
             height: 100vh;
             background: rgba(0, 0, 0, 0.6); /* Dim background */
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(5px);
             z-index: 2000;
-            display: none;
+            display: flex; /* Always display flex, control visibility */
             flex-direction: column;
-            justify-content: flex-end; /* Sheet coming from bottom */
-            animation: fadeInModal 0.2s ease;
+            justify-content: flex-end; 
+            
+            /* Hidden State Default */
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            
+            /* Smooth fade transition */
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .day-modal.active { display: flex; }
-        @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+
+        .day-modal.active { 
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+        }
 
         /* The actual sheet card */
         .modal-sheet {
             background: #121212;
             width: 100%;
             height: 92vh;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            padding: 0 20px 20px 20px;
-            overflow-y: auto;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            /* REMOVED PADDING AND OVERFLOW FROM PARENT TO FIX SCROLL OVERLAP */
+            padding: 0; 
             position: relative;
-            animation: slideUpSheet 0.35s cubic-bezier(0.19, 1, 0.22, 1);
+            
+            /* Shadow and Border */
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
             border-top: 1px solid var(--glass-border);
-            overscroll-behavior: contain; /* Prevents body scroll chaining/jiggling */
+            
+            /* Flex Layout to keep header fixed */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Important: Clip content to rounded corners */
+            
+            /* Transition State: Start off-screen */
+            transform: translateY(100%);
+            /* Smooth Spring-like Transition */
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        @keyframes slideUpSheet { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* Modal Handle */
+        /* Active State: Slide In */
+        .day-modal.active .modal-sheet {
+            transform: translateY(0);
+        }
+
+        /* Modal Handle - FIXED AT TOP */
         .modal-handle-container {
             width: 100%;
             display: flex;
             justify-content: center;
             padding-top: 15px;
-            padding-bottom: 25px;
-            position: sticky;
-            top: 0;
+            padding-bottom: 15px;
             background: #121212;
-            z-index: 10;
-            touch-action: none; /* Prevents browser handling */
+            z-index: 20;
+            flex-shrink: 0; /* Prevent shrinking */
+            touch-action: none; /* Prevents browser scrolling on the handle */
         }
         .modal-handle {
             width: 36px;
@@ -268,10 +292,14 @@
             border-radius: 3px;
         }
 
+        /* Modal Header - FIXED UNDER HANDLE */
         .modal-header-bar {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; border-bottom: 0.5px solid var(--divider); padding-bottom: 20px;
-            flex-shrink: 0;
+            padding: 0 25px 20px 25px; /* Horizontal padding moved here */
+            background: #121212;
+            border-bottom: 0.5px solid var(--divider); 
+            flex-shrink: 0; /* Prevent shrinking */
+            z-index: 20;
         }
         .modal-day-title { font-size: 2.2rem; font-weight: 800; color: white; letter-spacing: -0.5px; }
         .modal-close-btn {
@@ -281,7 +309,15 @@
             font-size: 1rem; cursor: pointer; font-weight: 700;
         }
 
-        .modal-body-content { padding-bottom: 80px; }
+        /* Modal Body - SCROLLABLE AREA */
+        .modal-body-content { 
+            padding: 25px 25px 80px 25px; /* Add bottom padding for safe area */
+            flex: 1; /* Take up all remaining space */
+            overflow-y: auto; /* Enable scrolling ONLY here */
+            overscroll-behavior: contain; /* Prevent body scroll chaining */
+            -webkit-overflow-scrolling: touch;
+        }
+        
         .modal-meal-row { margin-bottom: 40px; }
         .modal-meal-type { font-size: 0.9rem; color: var(--fitness-orange); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
         .modal-meal-desc { font-size: 1.5rem; line-height: 1.3; color: white; margin-bottom: 15px; font-weight: 600; font-family: "SF Pro Rounded"; }
@@ -1087,12 +1123,17 @@
 
     // Handle touch start
     modalSheet.addEventListener('touchstart', (e) => {
-        // Allow scroll if content is not at top
-        if (modalSheet.scrollTop > 0) return;
-        
-        isDragging = true;
-        startY = e.touches[0].clientY;
-        modalSheet.style.transition = 'none'; // Disable transition for direct 1:1 movement
+        // Only drag if the body is scrolled to the top OR we are touching the header/handle
+        const isHeader = e.target.closest('.modal-handle-container') || e.target.closest('.modal-header-bar');
+        const isBodyAtTop = modalBody.scrollTop <= 0;
+
+        if (isHeader || isBodyAtTop) {
+            isDragging = true;
+            startY = e.touches[0].clientY;
+            modalSheet.style.transition = 'none'; // Disable transition for direct 1:1 movement
+        } else {
+            isDragging = false;
+        }
     }, { passive: true });
 
     // Handle touch move
@@ -1104,11 +1145,8 @@
 
         // Only move if dragging down
         if (diff > 0) {
-            // If content is scrollable and we are at top, prevent default to stop scrolling
-            // and start moving the sheet
-            if(e.cancelable && modalSheet.scrollTop <= 0) {
-                e.preventDefault(); 
-            }
+            // Prevent scroll chaining if we are dragging the sheet
+            if(e.cancelable) e.preventDefault(); 
             
             currentTranslateY = diff;
             modalSheet.style.transform = `translateY(${diff}px)`;
