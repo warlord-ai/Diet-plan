@@ -360,24 +360,94 @@
             position: relative;
         }
 
+        /* UPDATED TRACKER LIST (iOS Style) */
         .tracker-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px; background-color: var(--card-color);
-            padding: 15px; border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            background-color: var(--card-color);
+            border-radius: var(--radius-lg);
+            padding: 0; /* Flush to edges of card */
+            overflow: hidden; /* For rounded corners on first/last items */
+            gap: 1px; /* Divider effect if using background gap, but border is better */
+            border: 1px solid rgba(255,255,255,0.05); /* Subtle border around group */
         }
+        
         .tracker-cell {
-            background-color: #2c2c2e; border-radius: 10px; padding: 10px 5px;
-            text-align: center; display: flex; flex-direction: column; align-items: center;
+            background-color: var(--card-color); /* Matches container */
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
         }
-        .tracker-date { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 5px; font-weight: 600; }
+        .tracker-cell:last-child {
+            border-bottom: none;
+        }
+        .tracker-cell:active {
+            background-color: #2c2c2e; /* Touch feedback */
+        }
+
+        .tracker-date {
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin: 0;
+            flex: 1; /* Push others to right */
+            text-align: left;
+        }
+
+        .tracker-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .tracker-input {
-            width: 100%; background: transparent; border: none; color: var(--text-primary);
-            font-size: 1.2rem; font-weight: 700; text-align: center; margin-bottom: 2px;
+            width: 80px;
+            background: transparent;
+            border: none;
+            color: white; /* White for value */
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: right;
+            margin: 0;
+            padding: 0;
         }
-        .tracker-input:focus { outline: none; background: #3a3a3c; border-radius: 4px; }
-        .diff-badge { font-size: 0.7rem; font-weight: 700; min-height: 1.2em; }
-        .diff-loss { color: var(--fitness-green); }
-        .diff-gain { color: var(--fitness-red); }
+        /* Remove spinner on number input */
+        .tracker-input::-webkit-outer-spin-button,
+        .tracker-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .tracker-input:focus {
+            background: rgba(164, 255, 0, 0.1);
+            border-radius: 4px;
+            outline: none;
+            color: var(--fitness-green);
+        }
+        .tracker-input::placeholder {
+            color: #3a3a3c;
+        }
+
+        .diff-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+            min-width: 50px;
+            text-align: center;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .diff-loss { color: #000; background-color: var(--fitness-green); }
+        .diff-gain { color: #fff; background-color: var(--fitness-red); }
+        .diff-neutral { color: var(--text-secondary); background: rgba(255,255,255,0.1); }
+
 
         /* BOTTOM NAVIGATION */
         .bottom-nav {
@@ -1398,14 +1468,20 @@
             const cell = document.createElement('div');
             cell.className = 'tracker-cell';
 
+            // Left: Date
             const label = document.createElement('span');
             label.className = 'tracker-date';
-            label.textContent = current.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            // Show "Weekday, Month Day"
+            label.textContent = current.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+            // Right: Wrapper for Input + Badge
+            const rightWrapper = document.createElement('div');
+            rightWrapper.className = 'tracker-input-wrapper';
 
             const input = document.createElement('input');
             input.type = 'number';
             input.className = 'tracker-input';
-            input.placeholder = '--';
+            input.placeholder = '0.0'; 
             input.step = '0.1';
             input.dataset.key = dateKey;
             
@@ -1423,7 +1499,12 @@
                 showSave();
             });
 
-            cell.appendChild(label); cell.appendChild(input); cell.appendChild(badge);
+            rightWrapper.appendChild(input);
+            rightWrapper.appendChild(badge);
+            
+            cell.appendChild(label); 
+            cell.appendChild(rightWrapper);
+            
             container.appendChild(cell);
             inputs.push({ input, badge });
             
@@ -1444,10 +1525,17 @@
     });
 
     function resetDates() {
-        const defaultStart = '2025-12-24';
-        const defaultEnd = '2026-01-24';
+        // Dynamic dates for current context
+        const now = new Date();
+        const futureDate = new Date();
+        futureDate.setDate(now.getDate() + 30);
+        
+        const defaultStart = now.toISOString().split('T')[0];
+        const defaultEnd = futureDate.toISOString().split('T')[0];
+        
         startInput.value = defaultStart;
         endInput.value = defaultEnd;
+        
         // Save preferences but DO NOT clear fatLossWeightTracker data
         localStorage.setItem('trackerStartDate', defaultStart);
         localStorage.setItem('trackerEndDate', defaultEnd);
