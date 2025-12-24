@@ -7,6 +7,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Diet Plan">
     <title>Diet Plan</title>
+    <!-- Add Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             /* Apple Fitness Palette */
@@ -32,7 +34,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html { overflow-x: hidden; background-color: var(--bg-color); }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-primary);
             margin: 0;
@@ -155,36 +157,85 @@
         .badge-info { color: var(--fitness-cyan); background-color: rgba(0, 224, 255, 0.15); }
         .badge-cal { color: var(--fitness-red); border: 1px solid rgba(250, 17, 79, 0.3); background: transparent; }
 
-        /* WALKING TOOL */
+        /* WALKING TOOL (NEW DESIGN) */
         .walking-tool-card {
             background-color: var(--card-color);
             padding: 30px 20px;
             border-radius: var(--radius-lg);
             display: flex; flex-direction: column; align-items: center;
             margin-top: 10px;
+            position: relative;
+            overflow: hidden;
         }
+
+        .ring-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .progress-ring__circle-bg {
+            stroke: #2c2c2e;
+        }
+
+        .progress-ring__circle {
+            stroke: var(--fitness-green);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            filter: drop-shadow(0 0 4px rgba(164, 255, 0, 0.4));
+        }
+
+        .timer-value-container {
+            position: absolute;
+            text-align: center;
+        }
+
         .timer-display {
-            font-size: clamp(3.5rem, 15vw, 5rem);
-            font-weight: 800; color: var(--text-primary);
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
             font-variant-numeric: tabular-nums;
-            margin-bottom: 25px;
-            text-shadow: 0 0 30px rgba(164, 255, 0, 0.1);
             line-height: 1;
+            letter-spacing: -1px;
         }
-        .controls { display: flex; align-items: center; gap: 40px; margin-bottom: 30px; }
+
+        .timer-label {
+            font-size: 0.9rem;
+            color: var(--fitness-green);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .controls { display: flex; align-items: center; gap: 40px; margin-bottom: 20px; z-index: 10; }
+        
         .btn-round {
             width: 75px; height: 75px; border-radius: 50%; border: none;
             font-size: 1.6rem; display: flex; justify-content: center; align-items: center;
             cursor: pointer; transition: transform 0.1s;
         }
         .btn-round:active { transform: scale(0.95); }
-        .start-btn { background-color: rgba(164, 255, 0, 0.15); color: var(--fitness-green); }
-        .stop-btn { background-color: rgba(250, 17, 79, 0.15); color: var(--fitness-red); }
-        .lap-btn { background-color: #3a3a3c; color: var(--text-primary); }
         
-        .lap-display { display: flex; flex-direction: column; align-items: center; }
-        .lap-display .label { font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 1px; font-weight: 600; }
-        .lap-display .count { font-size: 2.5rem; font-weight: 700; color: var(--fitness-cyan); }
+        .start-btn { background-color: var(--fitness-green); color: #000; box-shadow: 0 0 15px rgba(164, 255, 0, 0.3); }
+        .stop-btn { background-color: var(--fitness-red); color: #fff; box-shadow: 0 0 15px rgba(250, 17, 79, 0.3); }
+        .reset-btn { background-color: #3a3a3c; color: var(--text-secondary); width: 50px; height: 50px; font-size: 1rem;}
+
+        .session-stats {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding-top: 10px;
+        }
+        .s-stat { text-align: center; }
+        .s-val { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); font-family: "SF Pro Rounded", sans-serif; }
+        .s-lbl { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
 
         .technique-list li {
             margin-bottom: 12px; padding-left: 20px; position: relative;
@@ -192,7 +243,47 @@
         }
         .technique-list li::before { content: '✓'; color: var(--fitness-green); position: absolute; left: 0; font-weight: bold; }
 
-        /* TRACKER GRID */
+        /* TRACKER & DATE RANGE */
+        .date-range-container {
+            display: flex; gap: 10px; margin-bottom: 20px;
+            background: var(--card-color); padding: 15px;
+            border-radius: var(--radius-lg); justify-content: space-between;
+            align-items: flex-end; /* Align inputs and button */
+        }
+        .date-input-group { display: flex; flex-direction: column; flex: 1; }
+        .date-input-group label { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
+        .date-input {
+            background: #2c2c2e; border: none; color: white;
+            padding: 8px; border-radius: 8px; font-family: inherit; font-size: 0.9rem;
+            width: 100%; -webkit-appearance: none;
+            height: 38px;
+        }
+        
+        .reset-date-btn {
+            background: #3a3a3c;
+            border: none;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            width: 40px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .reset-date-btn:active { opacity: 0.7; }
+
+        /* CHART CONTAINER */
+        .chart-wrapper {
+            background-color: var(--card-color);
+            border-radius: var(--radius-lg);
+            padding: 15px;
+            margin-bottom: 20px;
+            height: 250px;
+            position: relative;
+        }
+
         .tracker-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             gap: 10px; background-color: var(--card-color);
@@ -513,26 +604,37 @@
         </header>
 
         <div class="walking-tool-card">
-            <div class="timer-display" id="walk-timer">00:00</div>
+            <!-- Progress Ring -->
+            <div class="ring-container">
+                <svg class="progress-ring" width="260" height="260">
+                    <circle class="progress-ring__circle-bg" stroke="#1c1c1e" stroke-width="18" fill="transparent" r="110" cx="130" cy="130"/>
+                    <circle class="progress-ring__circle" id="timer-ring" stroke-dasharray="691 691" stroke-dashoffset="0" stroke-width="18" fill="transparent" r="110" cx="130" cy="130"/>
+                </svg>
+                <div class="timer-value-container">
+                    <div class="timer-display" id="walk-timer">45:00</div>
+                    <div class="timer-label">Remaining</div>
+                </div>
+            </div>
             
             <div class="controls">
-                <button class="btn-round lap-btn" onclick="addLap()"><span>+</span></button>
-                <button class="btn-round start-btn" id="toggle-btn" onclick="toggleTimer()">▶</button>
-            </div>
-
-            <div class="lap-display">
-                <span class="count" id="lap-count">0</span>
-                <span class="label">LAPS / ROUNDS</span>
+                <button class="btn-round reset-btn" onclick="resetWalk()">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                </button>
+                <button class="btn-round start-btn" id="toggle-btn" onclick="toggleTimer()">
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </button>
             </div>
 
             <div class="session-stats">
                 <div class="s-stat">
                     <span class="s-val" id="est-cals" style="color: var(--fitness-red);">0</span>
-                    <span class="s-lbl">Est. Kcal</span>
+                    <span class="s-lbl">KCAL</span>
+                </div>
+                <div class="s-stat">
+                    <span class="s-val" style="color: var(--fitness-green);">45</span>
+                    <span class="s-lbl">GOAL</span>
                 </div>
             </div>
-            
-            <button onclick="resetWalk()" style="background:none; border:none; color:var(--text-secondary); margin-top:20px; text-decoration:underline;">Reset Session</button>
         </div>
 
         <h3 class="section-title">Technique</h3>
@@ -541,7 +643,6 @@
                 <li><strong>Posture:</strong> Tall spine, eyes forward.</li>
                 <li><strong>Arms:</strong> Bent 90°, swing from shoulders.</li>
                 <li><strong>Strike:</strong> Heel to toe roll.</li>
-                <li><strong>Pace:</strong> 'Talk Test' - able to speak, not sing.</li>
                 <li><strong>Target:</strong> 45 Mins Daily (Morning).</li>
             </ul>
         </div>
@@ -554,8 +655,22 @@
             <h2>Weight Log</h2>
         </header>
 
-        <div class="info-card" style="margin-bottom: 20px;">
-            <p style="margin:0; text-align:center;">Dec 24, 2025 — Jan 24, 2026</p>
+        <div class="date-range-container">
+            <div class="date-input-group">
+                <label>Start Date</label>
+                <input type="date" id="tracker-start" class="date-input">
+            </div>
+            <div class="date-input-group">
+                <label>End Date</label>
+                <input type="date" id="tracker-end" class="date-input">
+            </div>
+            <button class="reset-date-btn" onclick="resetDates()" title="Reset Range">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            </button>
+        </div>
+
+        <div class="chart-wrapper">
+            <canvas id="weightChart"></canvas>
         </div>
 
         <div id="tracker-container" class="tracker-grid">
@@ -595,147 +710,416 @@
 <script>
     // --- TAB NAVIGATION ---
     function switchTab(tabId, element) {
-        // Hide all views
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-        // Remove active class from nav items
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        
-        // Show target view
         document.getElementById('view-' + tabId).classList.add('active');
-        // Activate target nav
         element.classList.add('active');
-        
-        // Scroll top
         document.querySelector('.app-content').scrollTop = 0;
     }
 
-    // --- TIMER LOGIC (PERSISTENT) ---
-    const KEY_START_TIME = 'walkStartTime';
-    const KEY_ACCUMULATED_TIME = 'walkAccumulatedTime';
+    // --- TIMER LOGIC (COUNTDOWN + RING + ALARM) ---
+    const GOAL_MINUTES = 45;
+    const GOAL_MS = GOAL_MINUTES * 60 * 1000;
+    const ALARM_INTERVAL_MS = 5 * 60 * 1000; // 5 mins
+
+    // Keys
+    const KEY_TARGET_END = 'walkTargetEnd';     // When the timer is scheduled to finish (timestamp)
+    const KEY_REMAINING = 'walkRemaining';      // Saved remaining ms when paused
     const KEY_IS_RUNNING = 'walkIsRunning';
-    const KEY_LAPS = 'walkLaps';
+    const KEY_LAST_BEEP = 'walkLastBeepMin';    // Track last beep minute to avoid double triggers
 
     let timerInterval;
     const timerDisplay = document.getElementById('walk-timer');
-    const lapCountDisplay = document.getElementById('lap-count');
     const toggleBtn = document.getElementById('toggle-btn');
     const calsDisplay = document.getElementById('est-cals');
+    const ringCircle = document.getElementById('timer-ring');
+    
+    // SVG Config
+    const radius = ringCircle.r.baseVal.value;
+    const circumference = radius * 2 * Math.PI;
+    ringCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+    ringCircle.style.strokeDashoffset = circumference; // Start empty? No, countdown starts full usually? Or counts up visually?
+    // Let's make it start full and empty as time passes (countdown visual) OR empty and fill (progress visual). 
+    // Apple Fitness fills the ring as you progress. Let's FILL it as we get closer to 45 mins completion.
+    // So 45:00 remaining = empty ring. 00:00 remaining = full ring.
+
+    function setProgress(percent) {
+        const offset = circumference - (percent / 100) * circumference;
+        ringCircle.style.strokeDashoffset = offset;
+    }
+
+    // Audio Engine
+    function playBeep() {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const t = ctx.currentTime;
+        
+        // Helper function to create a single tone
+        function playTone(freq, startTime, duration) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.frequency.value = freq;
+            osc.type = 'sine'; // Smooth sine wave
+            
+            // Volume Envelope (Fade in/out to prevent clicking)
+            gain.gain.setValueAtTime(0, startTime);
+            gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05); // Attack
+            gain.gain.setValueAtTime(0.2, startTime + duration - 0.05); // Sustain
+            gain.gain.linearRampToValueAtTime(0, startTime + duration); // Release
+            
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+        }
+
+        // 3+ Second Alarm Sequence: Beep... Beep... Beep... BEEEEEP!
+        playTone(880, t, 0.6);        // Tone 1 (0.0s - 0.6s)
+        playTone(880, t + 0.8, 0.6);  // Tone 2 (0.8s - 1.4s)
+        playTone(880, t + 1.6, 0.6);  // Tone 3 (1.6s - 2.2s)
+        playTone(1760, t + 2.4, 1.0); // Final High Tone (2.4s - 3.4s)
+    }
 
     initTimer();
 
     function initTimer() {
-        const savedLaps = localStorage.getItem(KEY_LAPS);
-        if (savedLaps) lapCountDisplay.textContent = savedLaps;
-        
-        if (localStorage.getItem(KEY_IS_RUNNING) === 'true') {
+        const isRunning = localStorage.getItem(KEY_IS_RUNNING) === 'true';
+        if (isRunning) {
             setBtnStop();
-            timerInterval = setInterval(updateTimerDisplay, 1000);
-            updateTimerDisplay();
+            timerInterval = setInterval(updateTimerLoop, 1000);
         } else {
-            updateTimerDisplay();
+            setBtnStart();
         }
+        updateTimerVisuals(); // Immediate render
     }
 
     function toggleTimer() {
-        if (localStorage.getItem(KEY_IS_RUNNING) === 'true') {
-            // Pause
+        const isRunning = localStorage.getItem(KEY_IS_RUNNING) === 'true';
+        
+        // Initialize Audio Context on user gesture
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        if (isRunning) {
+            // PAUSE
             clearInterval(timerInterval);
-            const startTime = parseInt(localStorage.getItem(KEY_START_TIME) || Date.now());
-            const accumulated = parseInt(localStorage.getItem(KEY_ACCUMULATED_TIME) || 0);
-            localStorage.setItem(KEY_ACCUMULATED_TIME, accumulated + (Date.now() - startTime));
+            const targetEnd = parseInt(localStorage.getItem(KEY_TARGET_END) || 0);
+            const remaining = Math.max(0, targetEnd - Date.now());
+            
+            localStorage.setItem(KEY_REMAINING, remaining);
             localStorage.setItem(KEY_IS_RUNNING, 'false');
-            localStorage.removeItem(KEY_START_TIME);
+            localStorage.removeItem(KEY_TARGET_END);
+            
             setBtnStart();
-            updateTimerDisplay();
+            updateTimerVisuals();
         } else {
-            // Start
-            localStorage.setItem(KEY_START_TIME, Date.now());
+            // START
+            const currentRemaining = parseInt(localStorage.getItem(KEY_REMAINING));
+            // Default to goal if not set or finished
+            const duration = (!isNaN(currentRemaining) && currentRemaining > 0) ? currentRemaining : GOAL_MS;
+            
+            localStorage.setItem(KEY_TARGET_END, Date.now() + duration);
             localStorage.setItem(KEY_IS_RUNNING, 'true');
-            timerInterval = setInterval(updateTimerDisplay, 1000);
+            
+            timerInterval = setInterval(updateTimerLoop, 1000);
             setBtnStop();
         }
     }
 
-    function updateTimerDisplay() {
-        let totalSeconds = 0;
-        const accumulated = parseInt(localStorage.getItem(KEY_ACCUMULATED_TIME) || 0);
-        
-        if (localStorage.getItem(KEY_IS_RUNNING) === 'true') {
-            const startTime = parseInt(localStorage.getItem(KEY_START_TIME) || Date.now());
-            totalSeconds = Math.floor((accumulated + (Date.now() - startTime)) / 1000);
-        } else {
-            totalSeconds = Math.floor(accumulated / 1000);
+    function updateTimerLoop() {
+        const targetEnd = parseInt(localStorage.getItem(KEY_TARGET_END) || 0);
+        const remaining = targetEnd - Date.now();
+
+        if (remaining <= 0) {
+            // Finished
+            clearInterval(timerInterval);
+            localStorage.setItem(KEY_IS_RUNNING, 'false');
+            localStorage.setItem(KEY_REMAINING, 0);
+            localStorage.removeItem(KEY_TARGET_END);
+            playBeep(); // Final alarm
+            setBtnStart();
+            updateTimerVisuals();
+            return;
         }
 
-        const mins = Math.floor(totalSeconds / 60);
-        const secs = totalSeconds % 60;
-        timerDisplay.textContent = `${pad(mins)}:${pad(secs)}`;
-        calsDisplay.textContent = Math.floor(mins * 8.5); 
+        // Alarm Logic (Every 5 mins i.e., when passed 40, 35, 30...)
+        // We check if we just crossed a 5-min threshold
+        const elapsedMinutes = (GOAL_MS - remaining) / 1000 / 60;
+        const currentBlock = Math.floor(elapsedMinutes / 5); 
+        const lastBlock = parseInt(localStorage.getItem(KEY_LAST_BEEP) || 0);
+
+        if (currentBlock > lastBlock && currentBlock > 0) {
+            playBeep();
+            localStorage.setItem(KEY_LAST_BEEP, currentBlock);
+        }
+
+        updateTimerVisuals(remaining);
     }
 
-    function setBtnStart() { toggleBtn.innerHTML = "▶"; toggleBtn.classList.remove('stop-btn'); toggleBtn.classList.add('start-btn'); }
-    function setBtnStop() { toggleBtn.innerHTML = "◼"; toggleBtn.classList.remove('start-btn'); toggleBtn.classList.add('stop-btn'); }
-    function pad(val) { return val < 10 ? '0' + val : val; }
-    
-    function addLap() {
-        let l = parseInt(localStorage.getItem(KEY_LAPS) || 0) + 1;
-        localStorage.setItem(KEY_LAPS, l);
-        lapCountDisplay.textContent = l;
+    function updateTimerVisuals(forceRemaining) {
+        let remaining;
+        
+        if (forceRemaining !== undefined) {
+            remaining = forceRemaining;
+        } else if (localStorage.getItem(KEY_IS_RUNNING) === 'true') {
+            const targetEnd = parseInt(localStorage.getItem(KEY_TARGET_END) || 0);
+            remaining = Math.max(0, targetEnd - Date.now());
+        } else {
+            const saved = parseInt(localStorage.getItem(KEY_REMAINING));
+            remaining = !isNaN(saved) ? saved : GOAL_MS;
+        }
+
+        // Format Time
+        const totalSec = Math.ceil(remaining / 1000);
+        const mins = Math.floor(totalSec / 60);
+        const secs = totalSec % 60;
+        timerDisplay.textContent = `${pad(mins)}:${pad(secs)}`;
+
+        // Calories (Estimate based on completed time)
+        const completedMinutes = (GOAL_MS - remaining) / 1000 / 60;
+        calsDisplay.textContent = Math.floor(completedMinutes * 8.5);
+
+        // Ring Progress
+        // 45:00 remaining = 0% progress. 00:00 remaining = 100% progress.
+        const percent = ((GOAL_MS - remaining) / GOAL_MS) * 100;
+        setProgress(percent);
     }
 
     function resetWalk() {
         clearInterval(timerInterval);
-        ['walkStartTime', 'walkAccumulatedTime', 'walkIsRunning', 'walkLaps'].forEach(k => localStorage.removeItem(k));
-        timerDisplay.textContent = "00:00";
-        lapCountDisplay.textContent = "0";
-        calsDisplay.textContent = "0";
+        localStorage.removeItem(KEY_TARGET_END);
+        localStorage.removeItem(KEY_IS_RUNNING);
+        localStorage.removeItem(KEY_LAST_BEEP);
+        localStorage.setItem(KEY_REMAINING, GOAL_MS); // Reset to full 45
+        
         setBtnStart();
+        updateTimerVisuals();
+        setProgress(0);
     }
 
+    function setBtnStart() { 
+        toggleBtn.innerHTML = '<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'; 
+        toggleBtn.classList.remove('stop-btn'); toggleBtn.classList.add('start-btn'); 
+    }
+    function setBtnStop() { 
+        toggleBtn.innerHTML = '<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; 
+        toggleBtn.classList.remove('start-btn'); toggleBtn.classList.add('stop-btn'); 
+    }
+    function pad(val) { return val < 10 ? '0' + val : val; }
+
+
     // --- WEIGHT TRACKER LOGIC ---
-    const startDate = new Date('2025-12-24');
-    const endDate = new Date('2026-01-24');
     const container = document.getElementById('tracker-container');
     const storageKey = 'fatLossWeightTracker';
     const saveStatus = document.getElementById('save-status');
+    const startInput = document.getElementById('tracker-start');
+    const endInput = document.getElementById('tracker-end');
 
+    // Default or stored range
+    const today = new Date();
+    const future = new Date();
+    future.setDate(today.getDate() + 30);
+
+    const storedStart = localStorage.getItem('trackerStartDate');
+    const storedEnd = localStorage.getItem('trackerEndDate');
+
+    startInput.value = storedStart || today.toISOString().split('T')[0];
+    endInput.value = storedEnd || future.toISOString().split('T')[0];
+
+    // Load data
     let savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
-    let currentDate = new Date(startDate);
     let inputs = [];
+    let weightChart;
 
-    function getDateKey(d) { return d.toISOString().split('T')[0]; }
+    // Initialize Chart
+    function initChart() {
+        const ctx = document.getElementById('weightChart').getContext('2d');
+        
+        // Create Apple Fitness style gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(164, 255, 0, 0.4)'); // Top: Semi-transparent Neon Green
+        gradient.addColorStop(1, 'rgba(164, 255, 0, 0.0)'); // Bottom: Transparent
 
-    while (currentDate <= endDate) {
-        const dateKey = getDateKey(currentDate);
-        const cell = document.createElement('div');
-        cell.className = 'tracker-cell';
+        Chart.defaults.color = '#8e8e93';
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "SF Pro Rounded", "Segoe UI", Roboto, sans-serif';
+        
+        weightChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Weight',
+                    data: [],
+                    borderColor: '#a4ff00', // --fitness-green
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#000',
+                    pointBorderColor: '#a4ff00',
+                    pointBorderWidth: 2,
+                    pointRadius: 0, // Clean look: hide points by default
+                    pointHoverRadius: 6, // Show on interaction
+                    pointHoverBackgroundColor: '#000',
+                    pointHoverBorderColor: '#a4ff00',
+                    pointHoverBorderWidth: 3,
+                    fill: true,
+                    tension: 0.4, // Smooth curve
+                    borderCapStyle: 'round',
+                    borderJoinStyle: 'round'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1c1c1e',
+                        titleColor: '#8e8e93',
+                        titleFont: { size: 11, weight: '500' },
+                        bodyColor: '#ffffff',
+                        bodyFont: { size: 14, weight: '700', family: 'SF Pro Rounded' },
+                        padding: 12,
+                        cornerRadius: 12,
+                        borderColor: '#2c2c2e',
+                        borderWidth: 1,
+                        displayColors: false,
+                        callbacks: {
+                            label: (ctx) => `${ctx.parsed.y} kg`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { 
+                            color: '#8e8e93',
+                            font: { size: 10 },
+                            maxTicksLimit: 6, 
+                            maxRotation: 0 
+                        },
+                        border: { display: false }
+                    },
+                    y: {
+                        grid: { 
+                            color: '#2c2c2e',
+                            borderDash: [5, 5],
+                            drawBorder: false
+                        },
+                        border: { display: false },
+                        ticks: {
+                            color: '#8e8e93',
+                            font: { size: 10 },
+                            padding: 10
+                        }
+                    }
+                }
+            }
+        });
+    }
 
-        const label = document.createElement('span');
-        label.className = 'tracker-date';
-        label.textContent = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    function updateChart() {
+        // Visualize ALL data, ignoring the start/end input range filters
+        const dataPoints = [];
+        const labels = [];
 
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.className = 'tracker-input';
-        input.placeholder = '--';
-        input.step = '0.1';
-        input.dataset.key = dateKey;
-        if (savedData[dateKey]) input.value = savedData[dateKey];
+        // Sort keys to ensure chronological order
+        const sortedKeys = Object.keys(savedData).sort();
 
-        const badge = document.createElement('span');
-        badge.className = 'diff-badge';
-
-        input.addEventListener('input', (e) => {
-            savedData[dateKey] = e.target.value;
-            localStorage.setItem(storageKey, JSON.stringify(savedData));
-            calculateDiffs();
-            showSave();
+        sortedKeys.forEach(dateStr => {
+            const d = new Date(dateStr);
+            const val = parseFloat(savedData[dateStr]);
+            
+            // Only add valid numbers
+            if (!isNaN(val)) {
+                // Format Label
+                const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                labels.push(label);
+                dataPoints.push(val);
+            }
         });
 
-        cell.appendChild(label); cell.appendChild(input); cell.appendChild(badge);
-        container.appendChild(cell);
-        inputs.push({ input, badge });
-        currentDate.setDate(currentDate.getDate() + 1);
+        weightChart.data.labels = labels;
+        weightChart.data.datasets[0].data = dataPoints;
+        weightChart.update();
+    }
+
+    function renderTracker() {
+        // Clear existing
+        container.innerHTML = '';
+        inputs = [];
+
+        const start = new Date(startInput.value);
+        const end = new Date(endInput.value);
+        let current = new Date(start);
+
+        // Sanity check
+        if(isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return;
+
+        while (current <= end) {
+            const dateKey = current.toISOString().split('T')[0];
+            
+            const cell = document.createElement('div');
+            cell.className = 'tracker-cell';
+
+            const label = document.createElement('span');
+            label.className = 'tracker-date';
+            label.textContent = current.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'tracker-input';
+            input.placeholder = '--';
+            input.step = '0.1';
+            input.dataset.key = dateKey;
+            
+            if (savedData[dateKey]) input.value = savedData[dateKey];
+
+            const badge = document.createElement('span');
+            badge.className = 'diff-badge';
+
+            // Events
+            input.addEventListener('input', (e) => {
+                savedData[dateKey] = e.target.value;
+                localStorage.setItem(storageKey, JSON.stringify(savedData));
+                calculateDiffs();
+                updateChart();
+                showSave();
+            });
+
+            cell.appendChild(label); cell.appendChild(input); cell.appendChild(badge);
+            container.appendChild(cell);
+            inputs.push({ input, badge });
+            
+            current.setDate(current.getDate() + 1);
+        }
+        calculateDiffs();
+        updateChart();
+    }
+
+    // Listen for date changes
+    startInput.addEventListener('change', () => {
+        localStorage.setItem('trackerStartDate', startInput.value);
+        renderTracker();
+    });
+    endInput.addEventListener('change', () => {
+        localStorage.setItem('trackerEndDate', endInput.value);
+        renderTracker();
+    });
+
+    function resetDates() {
+        const defaultStart = '2025-12-24';
+        const defaultEnd = '2026-01-24';
+        startInput.value = defaultStart;
+        endInput.value = defaultEnd;
+        // Save preferences but DO NOT clear fatLossWeightTracker data
+        localStorage.setItem('trackerStartDate', defaultStart);
+        localStorage.setItem('trackerEndDate', defaultEnd);
+        renderTracker(); // This will re-render grid/chart with existing data for the new range
     }
 
     function calculateDiffs() {
@@ -763,7 +1147,9 @@
         setTimeout(() => saveStatus.classList.remove('visible'), 2000);
     }
 
-    calculateDiffs();
+    // Initial render
+    initChart();
+    renderTracker();
 
     // iOS check
     if (/iPhone|iPad/.test(navigator.userAgent) && !window.navigator.standalone) {
