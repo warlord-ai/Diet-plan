@@ -1421,10 +1421,10 @@
         const targetEnd = parseInt(localStorage.getItem(KEY_TARGET_END) || 0);
         const remaining = targetEnd - Date.now();
 
+        // 1. FINISHED (45 mins or less)
         if (remaining <= 0) {
-            // Finished
             timerWorker.postMessage('stop');
-            triggerNotification("Goal Crushed!", "You completed 45 minutes of brisk walking."); 
+            triggerNotification("Session Complete!", "Slow down and cool off"); 
             
             localStorage.setItem(KEY_IS_RUNNING, 'false');
             localStorage.setItem(KEY_REMAINING, 0);
@@ -1438,14 +1438,28 @@
             return;
         }
 
-        // --- NEW: 5 Minute Notifications Logic ---
+        // 2. INTERMEDIATE NOTIFICATIONS (5-40 mins)
         const completedMs = GOAL_MS - remaining;
         const completedMinutes = Math.floor(completedMs / 60000);
         const lastNotified = parseInt(localStorage.getItem(KEY_LAST_NOTIFIED) || 0);
 
         if (completedMinutes > 0 && completedMinutes % 5 === 0 && completedMinutes > lastNotified) {
-             triggerNotification("Keep Going!", `${completedMinutes} minutes completed.`);
-             localStorage.setItem(KEY_LAST_NOTIFIED, completedMinutes);
+             let msg = "";
+             switch(completedMinutes) {
+                 case 5: msg = "Walk slow – easy pace, relax your body"; break;
+                 case 10: msg = "Walk fast – pick up the pace, stay strong"; break;
+                 case 15: msg = "Walk slow – recover, breathe steady"; break;
+                 case 20: msg = "Walk fast – brisk steps, swing your arms"; break;
+                 case 25: msg = "Walk slow – ease back, keep moving"; break;
+                 case 30: msg = "Walk fast – strong pace, you’re doing great"; break;
+                 case 35: msg = "Walk slow – controlled and relaxed"; break;
+                 case 40: msg = "Walk fast – final push, stay focused"; break;
+             }
+
+             if(msg) {
+                 triggerNotification(`${completedMinutes} Mins Done`, msg);
+                 localStorage.setItem(KEY_LAST_NOTIFIED, completedMinutes);
+             }
         }
 
         updateTimerVisuals(remaining);
