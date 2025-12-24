@@ -132,39 +132,14 @@
             backdrop-filter: var(--glass-filter);
             -webkit-backdrop-filter: var(--glass-filter);
             border-radius: var(--radius-lg);
-            /* Complex shadow for depth + subtle inner light */
-            box-shadow: 
-                0 4px 24px -1px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 0 rgba(255, 255, 255, 0.1); 
-            /* Gradient Border simulating light from top-left */
-            border: 1px solid transparent;
+            /* Simplified shadow */
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+            /* Standard border for single layer look */
+            border: 1px solid rgba(255, 255, 255, 0.15);
             background-clip: padding-box;
             position: relative;
             overflow: hidden;
             transition: transform 0.2s, background-color 0.2s;
-        }
-        
-        /* The border gradient trick */
-        .glass-panel::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: var(--radius-lg); 
-            padding: 1px; /* border width */
-            background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05) 40%, rgba(255,255,255,0) 100%); 
-            -webkit-mask: 
-               linear-gradient(#fff 0 0) content-box, 
-               linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-        
-        /* Specular highlight sheen */
-        .glass-panel::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 30%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
-            pointer-events: none;
         }
 
         /* SUMMARY GRID */
@@ -186,17 +161,7 @@
             position: relative;
         }
         
-        .stat-card::before {
-            content: '›';
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 1.4rem;
-            color: rgba(255, 255, 255, 0.2);
-            font-weight: 600;
-            line-height: 1;
-            pointer-events: none;
-        }
+        /* Arrow removed */
 
         .stat-value { font-size: 1.8rem; font-weight: 700; font-family: "SF Pro Rounded", system-ui, sans-serif; letter-spacing: 0.5px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); }
         .stat-label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -838,14 +803,6 @@
             <div class="stat-card glass-panel">
                 <span class="stat-value" style="color: var(--fitness-red)">1200</span>
                 <span class="stat-label">Calories</span>
-            </div>
-            <div class="stat-card glass-panel">
-                <span class="stat-value" style="color: var(--fitness-green)">Millets</span>
-                <span class="stat-label">Carbs</span>
-            </div>
-            <div class="stat-card glass-panel">
-                <span class="stat-value" style="color: var(--fitness-orange)">Whole</span>
-                <span class="stat-label">Food Only</span>
             </div>
         </div>
 
