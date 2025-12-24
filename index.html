@@ -7,23 +7,28 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Diet Plan">
     <title>Diet Plan</title>
+    <!-- Add Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Add Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
             /* Apple Fitness Palette */
             --bg-color: #000000;
             
-            /* Liquid Glass Variables */
-            --glass-bg: rgba(30, 30, 32, 0.60);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --glass-highlight: rgba(255, 255, 255, 0.08);
-            --glass-blur: 35px;
+            /* Enhanced Liquid Glass Variables */
+            /* Darker, more transparent base for better contrast */
+            --glass-bg: rgba(30, 30, 35, 0.45); 
+            /* High saturation blur for that "Vision Pro" look */
+            --glass-filter: blur(40px) saturate(180%);
+            
+            --glass-border-light: rgba(255, 255, 255, 0.15);
+            --glass-border-dark: rgba(255, 255, 255, 0.02);
             
             --text-primary: #ffffff;
             --text-secondary: #98989d;
             --divider: rgba(255, 255, 255, 0.08);
-            --nav-bg: rgba(20, 20, 20, 0.75);
+            --nav-bg: rgba(20, 20, 20, 0.6);
             
             /* Neon Accents */
             --fitness-red: #fa114f;
@@ -31,8 +36,8 @@
             --fitness-cyan: #00e0ff;
             --fitness-orange: #ff9500;
             
-            --radius-lg: 28px;
-            --radius-sm: 14px;
+            --radius-lg: 32px; /* Slightly rounder for liquid feel */
+            --radius-sm: 16px;
             --bottom-nav-height: 110px; 
         }
 
@@ -65,10 +70,12 @@
                 radial-gradient(at 100% 0%, rgba(164, 255, 0, 0.1) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(0, 224, 255, 0.15) 0px, transparent 50%),
                 radial-gradient(at 0% 100%, rgba(20, 20, 20, 1) 0px, transparent 50%);
-            filter: blur(60px);
+            filter: blur(80px); /* Softer mesh */
             z-index: -1;
             pointer-events: none;
             animation: drift 20s ease-in-out infinite alternate;
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         @keyframes drift {
@@ -81,8 +88,8 @@
         .app-content {
             flex: 1;
             overflow-y: auto;
-            padding: 10px;
-            padding-top: max(10px, env(safe-area-inset-top));
+            padding: 15px; /* Increased padding for better spacing */
+            padding-top: max(15px, env(safe-area-inset-top));
             padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
             width: 100%;
             max-width: 800px;
@@ -91,50 +98,72 @@
 
         .view-section {
             display: none;
-            animation: fadeIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            will-change: opacity, transform;
         }
         .view-section.active { display: block; }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.96); filter: blur(5px); }
-            to { opacity: 1; transform: scale(1); filter: blur(0); }
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        /* HEADER with SHIMMER EFFECT */
-        header { padding: 10px 15px 20px 15px; text-align: left; }
+        /* HEADER */
+        header { padding: 10px 5px 25px 5px; text-align: left; }
         h1 { 
-            margin: 0; font-size: 36px; font-weight: 800; letter-spacing: 0.3px; line-height: 1.1; 
-            /* Shimmer Gradient */
-            background: linear-gradient(110deg, #fff 30%, rgba(255,255,255,0.5) 45%, #fff 60%);
+            margin: 0; font-size: 38px; font-weight: 800; letter-spacing: 0.3px; line-height: 1.1; 
+            background: linear-gradient(110deg, #fff 30%, rgba(255,255,255,0.6) 45%, #fff 60%);
             background-size: 200% 100%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: 0 10px 30px rgba(0,0,0,0.3);
             animation: textShimmer 5s infinite linear;
+            will-change: background-position;
         }
         @keyframes textShimmer {
             0% { background-position: 100% 0; }
             100% { background-position: -100% 0; }
         }
-        h2 { margin-top: 5px; font-weight: 700; font-size: 13px; color: var(--fitness-red); text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; }
+        h2 { margin-top: 6px; font-weight: 700; font-size: 13px; color: var(--fitness-red); text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
 
-        /* ENHANCED GLASS PANEL */
+        /* --- LIQUID GLASS PANEL UPDATE --- */
         .glass-panel {
-            background: linear-gradient(160deg, rgba(40, 40, 45, 0.6) 0%, rgba(20, 20, 22, 0.5) 100%);
-            backdrop-filter: blur(var(--glass-blur));
-            -webkit-backdrop-filter: blur(var(--glass-blur));
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 1px solid rgba(255, 255, 255, 0.15); /* Specular Highlight */
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-filter);
+            -webkit-backdrop-filter: var(--glass-filter);
             border-radius: var(--radius-lg);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-            transition: transform 0.2s, background-color 0.2s;
+            /* Complex shadow for depth + subtle inner light */
+            box-shadow: 
+                0 4px 24px -1px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.1); 
+            /* Gradient Border simulating light from top-left */
+            border: 1px solid transparent;
+            background-clip: padding-box;
             position: relative;
             overflow: hidden;
+            transition: transform 0.2s, background-color 0.2s;
         }
         
+        /* The border gradient trick */
+        .glass-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius-lg); 
+            padding: 1px; /* border width */
+            background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05) 40%, rgba(255,255,255,0) 100%); 
+            -webkit-mask: 
+               linear-gradient(#fff 0 0) content-box, 
+               linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        
+        /* Specular highlight sheen */
         .glass-panel::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 40%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%);
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 30%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
             pointer-events: none;
         }
 
@@ -142,28 +171,26 @@
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 15px;
             margin-bottom: 35px;
             width: 100%;
             padding: 0 5px;
         }
 
         .stat-card {
-            padding: 18px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 100px;
-            /* Added position relative for the arrow */
+            min-height: 110px;
             position: relative;
         }
         
-        /* Arrow for Stat Card */
         .stat-card::before {
             content: '›';
             position: absolute;
-            top: 15px;
-            right: 18px;
+            top: 20px;
+            right: 20px;
             font-size: 1.4rem;
             color: rgba(255, 255, 255, 0.2);
             font-weight: 600;
@@ -171,7 +198,7 @@
             pointer-events: none;
         }
 
-        .stat-value { font-size: 1.7rem; font-weight: 700; font-family: "SF Pro Rounded", system-ui, sans-serif; letter-spacing: 0.5px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); }
+        .stat-value { font-size: 1.8rem; font-weight: 700; font-family: "SF Pro Rounded", system-ui, sans-serif; letter-spacing: 0.5px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); }
         .stat-label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* SECTION TITLES */
@@ -183,13 +210,12 @@
             color: var(--text-primary);
             display: flex;
             align-items: center;
-            justify-content: space-between; /* Push arrow to right */
+            justify-content: space-between;
             padding-left: 10px;
             padding-right: 15px;
             letter-spacing: 0.3px;
         }
         
-        /* Arrow for Section Titles */
         .section-title::after {
             content: '›';
             font-size: 1.4rem;
@@ -208,45 +234,43 @@
         .info-card strong { color: #fff; font-weight: 600; }
 
         /* MEAL PLAN */
-        .days-container { display: grid; gap: 14px; padding: 0 5px; }
+        .days-container { display: grid; gap: 15px; padding: 0 5px; }
         .day-card { 
-            padding: 20px; 
+            padding: 24px; 
             cursor: pointer; 
             transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1); 
-            /* Added Padding right to prevent text overlap with arrow */
             padding-right: 40px;
         }
-        .day-card:active { transform: scale(0.96); background: rgba(50, 50, 55, 0.7); }
+        .day-card:active { transform: scale(0.97); background: rgba(50, 50, 55, 0.6); }
         
         .day-card::after {
             content: '›';
             position: absolute;
-            right: 20px;
+            right: 24px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 1.4rem;
-            color: rgba(255,255,255,0.3); /* Slightly brighter arrow */
+            color: rgba(255,255,255,0.3);
             font-weight: 600;
             line-height: 1;
         }
 
         .day-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--divider);
-            /* Reduced header padding since card has it now */
+            margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--divider);
             padding-right: 0; 
         }
-        .day-name { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+        .day-name { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
         
         .day-stats { display: flex; gap: 8px; }
         .stat-badge { font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 8px; letter-spacing: 0.3px; backdrop-filter: blur(4px); }
         .stat-cals { color: var(--fitness-red); background: rgba(250, 17, 79, 0.1); border: 1px solid rgba(250, 17, 79, 0.2); }
         .stat-prot { color: var(--fitness-green); background: rgba(164, 255, 0, 0.1); border: 1px solid rgba(164, 255, 0, 0.2); }
         
-        .meal-row { margin-bottom: 15px; padding-left: 0; }
+        .meal-row { margin-bottom: 18px; padding-left: 0; }
         .meal-row:last-child { margin-bottom: 0; }
         .meal-title { font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.8; }
-        .meal-content { font-size: 1rem; color: rgba(255,255,255,0.9); margin-bottom: 6px; line-height: 1.4; font-weight: 500; }
+        .meal-content { font-size: 1.05rem; color: rgba(255,255,255,0.95); margin-bottom: 6px; line-height: 1.4; font-weight: 500; }
 
         /* BADGES */
         .badges-wrapper { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -262,9 +286,9 @@
             top: 0; left: 0;
             width: 100vw;
             height: 100vh;
-            height: 100dvh; /* Mobile viewport fix */
+            height: 100dvh;
             background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             z-index: 2000;
             display: flex;
             flex-direction: column;
@@ -282,17 +306,17 @@
         }
 
         .modal-sheet {
-            background: rgba(28, 28, 30, 0.85);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
+            background: rgba(35, 35, 40, 0.85);
+            backdrop-filter: blur(50px) saturate(180%);
+            -webkit-backdrop-filter: blur(50px) saturate(180%);
             width: 100%;
             height: 92vh;
-            height: 92dvh; /* Mobile viewport fix */
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
+            height: 92dvh;
+            border-top-left-radius: 35px;
+            border-top-right-radius: 35px;
             padding: 0; 
             position: relative;
-            box-shadow: 0 -10px 60px rgba(0,0,0,0.6);
+            box-shadow: 0 -10px 60px rgba(0,0,0,0.7);
             border-top: 1px solid rgba(255,255,255,0.15);
             display: flex;
             flex-direction: column;
@@ -318,7 +342,7 @@
         .modal-handle {
             width: 40px;
             height: 5px;
-            background-color: rgba(255,255,255,0.2);
+            background-color: rgba(255,255,255,0.3);
             border-radius: 3px;
         }
 
@@ -342,14 +366,13 @@
             padding: 25px 25px 120px 25px;
             flex: 1; 
             overflow-y: auto; 
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-x: hidden; 
             overscroll-behavior: contain; 
             -webkit-overflow-scrolling: touch;
         }
         
         .modal-meal-row { margin-bottom: 40px; }
         .modal-meal-type { font-size: 0.9rem; color: var(--fitness-orange); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
-        /* Fix for horizontal overflow */
         .modal-meal-desc { 
             font-size: 1.6rem; 
             line-height: 1.3; 
@@ -358,7 +381,7 @@
             font-weight: 600; 
             font-family: "SF Pro Rounded"; 
             text-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            word-wrap: break-word; /* Ensure wrapping */
+            word-wrap: break-word; 
             hyphens: auto;
         }
         .modal-badges-wrapper { transform: scale(1.1); transform-origin: left; }
@@ -389,7 +412,7 @@
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
             /* Enhanced Neon Glow */
-            filter: drop-shadow(0 0 10px rgba(164, 255, 0, 0.6));
+            filter: drop-shadow(0 0 15px rgba(164, 255, 0, 0.7));
         }
 
         .timer-value-container { position: absolute; text-align: center; }
@@ -401,7 +424,7 @@
             line-height: 1;
             letter-spacing: -2px;
             font-family: "SF Pro Rounded";
-            text-shadow: 0 0 30px rgba(164, 255, 0, 0.2);
+            text-shadow: 0 0 40px rgba(164, 255, 0, 0.25);
         }
         .timer-label {
             font-size: 1.1rem;
@@ -423,9 +446,9 @@
         }
         
         .btn-round {
-            width: 80px; height: 80px;
+            width: 55px; height: 55px;
             border-radius: 50%; border: none;
-            font-size: 1.8rem; display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; display: flex; justify-content: center; align-items: center;
             cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
             overflow: hidden;
@@ -441,27 +464,28 @@
         }
 
         .start-btn { 
-            width: 80px; height: 80px; /* Main button stays big */
+            width: 85px; height: 85px; /* Main button stays big */
+            font-size: 2rem;
             background: linear-gradient(145deg, #a4ff00, #7abb00); 
             color: #000; 
             box-shadow: 
-                0 10px 25px rgba(164, 255, 0, 0.4),
+                0 15px 35px rgba(164, 255, 0, 0.35),
                 inset 0 2px 5px rgba(255,255,255,0.5);
         }
         
         .stop-btn { 
-            width: 80px; height: 80px;
+            width: 85px; height: 85px;
+            font-size: 2rem;
             background: linear-gradient(145deg, #fa114f, #d00033); 
             color: #fff; 
             box-shadow: 
-                0 10px 25px rgba(250, 17, 79, 0.4),
+                0 15px 35px rgba(250, 17, 79, 0.35),
                 inset 0 2px 5px rgba(255,255,255,0.4);
         }
         
         .reset-btn { 
             background: rgba(255,255,255,0.1); 
             color: var(--text-primary); 
-            width: 50px; height: 50px; font-size: 1.2rem; 
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
         }
@@ -469,7 +493,6 @@
         .notify-btn {
             background: rgba(255,255,255,0.1); 
             color: var(--fitness-orange); 
-            width: 50px; height: 50px; font-size: 1.2rem; 
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
         }
@@ -531,7 +554,7 @@
         .date-input-group label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
         
         .date-input {
-            background: rgba(0, 0, 0, 0.2); /* Darker inlay */
+            background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1); 
             border-radius: 10px;
             color: var(--fitness-green);
@@ -611,7 +634,7 @@
 
         .tracker-input {
             width: 85px;
-            background: rgba(0, 0, 0, 0.2); /* Darker inlay for better contrast */
+            background: rgba(0, 0, 0, 0.2); 
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 10px;
             color: white; 
@@ -631,7 +654,7 @@
         }
 
         .tracker-input:focus {
-            background: rgba(164, 255, 0, 0.15); /* Slight green tint on focus */
+            background: rgba(164, 255, 0, 0.15); 
             border-color: var(--fitness-green);
             outline: none;
             color: #fff;
@@ -659,30 +682,41 @@
         .diff-neutral { color: var(--text-secondary); background: rgba(255,255,255,0.1); }
 
 
-        /* BOTTOM NAVIGATION (Floating Glass Pill) */
+        /* --- UPDATED BOTTOM NAVIGATION --- */
         .bottom-nav {
             position: fixed;
             bottom: max(20px, env(safe-area-inset-bottom));
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) translateZ(0); /* Hardware accel */
             width: 85%;
             max-width: 360px;
-            background: rgba(45, 45, 50, 0.65); /* Lighter, milkier glass */
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.15);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            border-radius: 40px; /* Pill Shape */
+            
+            /* Liquid Glass Styling */
+            background: rgba(45, 45, 50, 0.6); 
+            backdrop-filter: blur(35px) saturate(200%); /* Strong blur + vivid colors */
+            -webkit-backdrop-filter: blur(35px) saturate(200%);
+            
+            border-radius: 40px; 
+            
+            /* Inner thickness illusion */
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.5),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
+                inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
+            
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            
             display: flex; justify-content: space-evenly;
             align-items: center;
             padding: 14px 20px;
             z-index: 1000;
+            will-change: transform; 
         }
 
         .nav-item {
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; 
-            color: rgba(255, 255, 255, 0.5); /* Dim inactive state */
+            color: rgba(255, 255, 255, 0.5); 
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer; 
             -webkit-tap-highlight-color: transparent;
@@ -692,9 +726,9 @@
         
         .nav-item.active { 
             color: #ffffff; 
-            /* Spotlight Effect */
-            background: radial-gradient(circle at center, rgba(164, 255, 0, 0.15) 0%, transparent 70%);
-            border-radius: 20px;
+            /* Spotlight / Glow underneath the active item */
+            background: radial-gradient(circle at center, rgba(164, 255, 0, 0.2) 0%, transparent 60%);
+            border-radius: 50%;
         }
         
         .nav-icon {
@@ -703,12 +737,14 @@
             fill: currentColor;
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            will-change: transform;
         }
         
         .nav-item.active .nav-icon { 
-            transform: translateY(-4px) scale(1.1); 
+            transform: translateY(-4px) scale(1.15); 
             fill: var(--fitness-green); 
-            filter: drop-shadow(0 0 15px rgba(164, 255, 0, 0.6)); /* Stronger Neon Glow */
+            /* Strong Neon Glow for Active State */
+            filter: drop-shadow(0 0 12px rgba(164, 255, 0, 0.8)); 
         } 
 
         .nav-label { 
@@ -720,6 +756,7 @@
         .nav-item.active .nav-label {
             opacity: 1;
             font-weight: 700;
+            text-shadow: 0 0 10px rgba(164, 255, 0, 0.4);
         }
 
         /* CELEBRATION MODAL */
@@ -786,6 +823,7 @@
 
 <div class="app-content">
 
+    <!-- VIEW: DIET PLAN -->
     <div id="view-diet" class="view-section active">
         <header>
             <h1>Diet Plan</h1>
@@ -828,6 +866,7 @@
 
         <h3 class="section-title">Weekly Schedule</h3>
         <div class="days-container">
+            <!-- Sunday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Sunday</span>
@@ -853,6 +892,7 @@
                 </div>
             </div>
 
+            <!-- Monday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Monday</span>
@@ -878,7 +918,8 @@
                 </div>
             </div>
 
-             <div class="day-card glass-panel" onclick="openDayModal(this)">
+             <!-- Tuesday -->
+            <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Tuesday</span>
                     <div class="day-stats">
@@ -903,6 +944,7 @@
                 </div>
             </div>
 
+            <!-- Wednesday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Wednesday</span>
@@ -928,6 +970,7 @@
                 </div>
             </div>
 
+            <!-- Thursday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Thursday</span>
@@ -953,6 +996,7 @@
                 </div>
             </div>
 
+            <!-- Friday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Friday</span>
@@ -978,6 +1022,7 @@
                 </div>
             </div>
 
+            <!-- Saturday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Saturday</span>
@@ -1011,6 +1056,7 @@
         </div>
     </div>
 
+    <!-- VIEW: WORKOUT (TIMER) -->
     <div id="view-workout" class="view-section">
         <header>
             <h1>Workout</h1>
@@ -1018,6 +1064,7 @@
         </header>
 
         <div class="walking-tool-card glass-panel">
+            <!-- Progress Ring -->
             <div class="ring-container">
                 <svg class="progress-ring" width="260" height="260">
                     <circle class="progress-ring__circle-bg" stroke="#1c1c1e" stroke-width="18" fill="transparent" r="110" cx="130" cy="130"/>
@@ -1030,14 +1077,17 @@
             </div>
             
             <div class="controls">
+                <!-- Reset Button -->
                 <button class="btn-round reset-btn" onclick="resetWalk()">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
                 </button>
                 
+                <!-- Notification Button -->
                 <button class="btn-round notify-btn" onclick="requestNotification()" title="Allow Notifications">
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                 </button>
 
+                <!-- Start/Stop Button -->
                 <button class="btn-round start-btn" id="toggle-btn" onclick="toggleTimer()">
                     <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 </button>
@@ -1076,10 +1126,12 @@
                 <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
             </div>
             <div class="calendar-grid" id="activity-grid">
-                </div>
+                <!-- Grid items generated by JS -->
+            </div>
         </div>
     </div>
 
+    <!-- VIEW: TRACKER (WEIGHT) -->
     <div id="view-tracker" class="view-section">
         <header>
             <h1>Progress</h1>
@@ -1105,15 +1157,17 @@
         </div>
 
         <div id="tracker-container" class="tracker-grid glass-panel">
-            </div>
+            <!-- JS Populated -->
+        </div>
     </div>
 
 </div>
 
+<!-- BOTTOM NAVIGATION (Floating Glass Pill) -->
 <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('diet', this)">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 3h-1V1h-2v2H8V1H6v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
         </svg>
         <span class="nav-label">Plan</span>
     </div>
@@ -1131,6 +1185,7 @@
     </div>
 </nav>
 
+<!-- CELEBRATION MODAL -->
 <div id="award-modal" class="award-modal">
     <div class="award-content">
         <div class="award-icon">🏆</div>
@@ -1140,6 +1195,7 @@
     </div>
 </div>
 
+<!-- FULL SCREEN DAY MODAL (UPDATED TO SHEET) -->
 <div id="day-modal" class="day-modal">
     <div class="modal-sheet">
         <div class="modal-handle-container">
@@ -1150,10 +1206,12 @@
             <button class="modal-close-btn" onclick="closeDayModal()">✕</button>
         </div>
         <div id="modal-body-content" class="modal-body-content">
-            </div>
+            <!-- Content Injected Here -->
+        </div>
     </div>
 </div>
 
+<!-- UTILS -->
 <div id="ios-install-prompt" class="ios-prompt">
     <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
         <strong>Install App</strong>
