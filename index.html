@@ -198,7 +198,7 @@
         .info-card p { font-size: 0.95rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; line-height: 1.5; }
         .info-card strong { color: #fff; font-weight: 600; }
 
-        /* MEAL PLAN */
+        /* MEAL PLAN & MACRO VISUALIZATION */
         .days-container { display: grid; gap: 15px; padding: 0 5px; }
         .day-card { 
             padding: 24px; 
@@ -221,16 +221,75 @@
         }
 
         .day-header {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: flex-start;
             margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--divider);
             padding-right: 0; 
         }
-        .day-name { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
+        .day-name { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
         
-        .day-stats { display: flex; gap: 8px; }
-        .stat-badge { font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 8px; letter-spacing: 0.3px; backdrop-filter: blur(4px); }
-        .stat-cals { color: var(--fitness-red); background: rgba(250, 17, 79, 0.1); border: 1px solid rgba(250, 17, 79, 0.2); }
-        .stat-prot { color: var(--fitness-green); background: rgba(164, 255, 0, 0.1); border: 1px solid rgba(164, 255, 0, 0.2); }
+        /* Updated Day Stats for Macro Viz */
+        .day-stats { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-end; 
+            gap: 6px; 
+        }
+        
+        .cal-display {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: "SF Pro Rounded", sans-serif;
+        }
+
+        .macro-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .macro-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 24px;
+        }
+
+        .macro-val {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+            font-family: "SF Pro Rounded", sans-serif;
+            opacity: 0.9;
+        }
+
+        .macro-bar-bg {
+            width: 4px;
+            height: 18px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .macro-bar-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        .macro-label {
+            font-size: 8px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.5);
+            margin-top: 3px;
+            text-transform: uppercase;
+        }
         
         .meal-row { margin-bottom: 18px; padding-left: 0; }
         .meal-row:last-child { margin-bottom: 0; }
@@ -824,12 +883,28 @@
         <h3 class="section-title">Weekly Schedule</h3>
         <div class="days-container">
             <!-- Sunday -->
-            <div class="day-card glass-panel" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this); triggerHaptic()">
                 <div class="day-header">
                     <span class="day-name">Sunday</span>
                     <div class="day-stats">
-                        <span class="stat-badge stat-cals">1200 kcal</span>
-                        <span class="stat-badge stat-prot">65g Prot</span>
+                        <span class="cal-display">1200 kcal</span>
+                        <div class="macro-container">
+                            <div class="macro-item">
+                                <span class="macro-val">65g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 35%; background:#a4ff00;"></div></div>
+                                <span class="macro-label">P</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">120g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 50%; background:#00e0ff;"></div></div>
+                                <span class="macro-label">C</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">40g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 15%; background:#ff9500;"></div></div>
+                                <span class="macro-label">F</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="meal-row">
@@ -850,12 +925,28 @@
             </div>
 
             <!-- Monday -->
-            <div class="day-card glass-panel" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this); triggerHaptic()">
                 <div class="day-header">
                     <span class="day-name">Monday</span>
                     <div class="day-stats">
-                        <span class="stat-badge stat-cals">1180 kcal</span>
-                        <span class="stat-badge stat-prot">50g Prot</span>
+                        <span class="cal-display">1180 kcal</span>
+                        <div class="macro-container">
+                            <div class="macro-item">
+                                <span class="macro-val">50g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 30%; background:#a4ff00;"></div></div>
+                                <span class="macro-label">P</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">130g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 55%; background:#00e0ff;"></div></div>
+                                <span class="macro-label">C</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">42g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 15%; background:#ff9500;"></div></div>
+                                <span class="macro-label">F</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="meal-row">
@@ -876,12 +967,28 @@
             </div>
 
              <!-- Tuesday -->
-            <div class="day-card glass-panel" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this); triggerHaptic()">
                 <div class="day-header">
                     <span class="day-name">Tuesday</span>
                     <div class="day-stats">
-                        <span class="stat-badge stat-cals">1200 kcal</span>
-                        <span class="stat-badge stat-prot">70g Prot</span>
+                        <span class="cal-display">1200 kcal</span>
+                        <div class="macro-container">
+                            <div class="macro-item">
+                                <span class="macro-val">70g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 40%; background:#a4ff00;"></div></div>
+                                <span class="macro-label">P</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">110g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 45%; background:#00e0ff;"></div></div>
+                                <span class="macro-label">C</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">45g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 15%; background:#ff9500;"></div></div>
+                                <span class="macro-label">F</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="meal-row">
@@ -902,12 +1009,28 @@
             </div>
 
             <!-- Wednesday -->
-            <div class="day-card glass-panel" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this); triggerHaptic()">
                 <div class="day-header">
                     <span class="day-name">Wednesday</span>
                     <div class="day-stats">
-                        <span class="stat-badge stat-cals">1220 kcal</span>
-                        <span class="stat-badge stat-prot">55g Prot</span>
+                        <span class="cal-display">1220 kcal</span>
+                        <div class="macro-container">
+                            <div class="macro-item">
+                                <span class="macro-val">55g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 32%; background:#a4ff00;"></div></div>
+                                <span class="macro-label">P</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">125g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 48%; background:#00e0ff;"></div></div>
+                                <span class="macro-label">C</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">40g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 20%; background:#ff9500;"></div></div>
+                                <span class="macro-label">F</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="meal-row">
@@ -928,12 +1051,28 @@
             </div>
 
             <!-- Thursday -->
-            <div class="day-card glass-panel" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this); triggerHaptic()">
                 <div class="day-header">
                     <span class="day-name">Thursday</span>
                     <div class="day-stats">
-                        <span class="stat-badge stat-cals">1200 kcal</span>
-                        <span class="stat-badge stat-prot">45g Prot</span>
+                        <span class="cal-display">1200 kcal</span>
+                        <div class="macro-container">
+                            <div class="macro-item">
+                                <span class="macro-val">45g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 28%; background:#a4ff00;"></div></div>
+                                <span class="macro-label">P</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">140g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 57%; background:#00e0ff;"></div></div>
+                                <span class="macro-label">C</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">38g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 15%; background:#ff9500;"></div></div>
+                                <span class="macro-label">F</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="meal-row">
@@ -954,12 +1093,28 @@
             </div>
 
             <!-- Friday -->
-            <div class="day-card glass-panel" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this); triggerHaptic()">
                 <div class="day-header">
                     <span class="day-name">Friday</span>
                     <div class="day-stats">
-                        <span class="stat-badge stat-cals">1250 kcal</span>
-                        <span class="stat-badge stat-prot">45g Prot</span>
+                        <span class="cal-display">1250 kcal</span>
+                        <div class="macro-container">
+                            <div class="macro-item">
+                                <span class="macro-val">45g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 28%; background:#a4ff00;"></div></div>
+                                <span class="macro-label">P</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">140g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 52%; background:#00e0ff;"></div></div>
+                                <span class="macro-label">C</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">40g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 20%; background:#ff9500;"></div></div>
+                                <span class="macro-label">F</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="meal-row">
@@ -980,12 +1135,28 @@
             </div>
 
             <!-- Saturday -->
-            <div class="day-card glass-panel" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this); triggerHaptic()">
                 <div class="day-header">
                     <span class="day-name">Saturday</span>
                     <div class="day-stats">
-                        <span class="stat-badge stat-cals">1250 kcal</span>
-                        <span class="stat-badge stat-prot">55g Prot</span>
+                        <span class="cal-display">1250 kcal</span>
+                        <div class="macro-container">
+                            <div class="macro-item">
+                                <span class="macro-val">55g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 32%; background:#a4ff00;"></div></div>
+                                <span class="macro-label">P</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">130g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 48%; background:#00e0ff;"></div></div>
+                                <span class="macro-label">C</span>
+                            </div>
+                            <div class="macro-item">
+                                <span class="macro-val">45g</span>
+                                <div class="macro-bar-bg"><div class="macro-bar-fill" style="height: 20%; background:#ff9500;"></div></div>
+                                <span class="macro-label">F</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="meal-row">
@@ -1035,17 +1206,17 @@
             
             <div class="controls">
                 <!-- Reset Button -->
-                <button class="btn-round reset-btn" onclick="resetWalk()">
+                <button class="btn-round reset-btn" onclick="resetWalk(); triggerHaptic()">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
                 </button>
                 
                 <!-- Notification Button -->
-                <button class="btn-round notify-btn" onclick="requestNotification()" title="Allow Notifications">
+                <button class="btn-round notify-btn" onclick="requestNotification(); triggerHaptic()" title="Allow Notifications">
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                 </button>
 
                 <!-- Start/Stop Button -->
-                <button class="btn-round start-btn" id="toggle-btn" onclick="toggleTimer()">
+                <button class="btn-round start-btn" id="toggle-btn" onclick="toggleTimer(); triggerHaptic()">
                     <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 </button>
             </div>
@@ -1075,9 +1246,9 @@
         <h3 class="section-title">Activity Calendar</h3>
         <div class="calendar-card glass-panel">
             <div class="calendar-header">
-                <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+                <button class="cal-nav-btn" onclick="changeMonth(-1); triggerHaptic()">‹</button>
                 <span id="cal-month-year"></span>
-                <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+                <button class="cal-nav-btn" onclick="changeMonth(1); triggerHaptic()">›</button>
             </div>
             <div class="calendar-days-header">
                 <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
@@ -1104,7 +1275,7 @@
                 <label>End Date</label>
                 <input type="date" id="tracker-end" class="date-input">
             </div>
-            <button class="reset-date-btn" onclick="resetDates()" title="Reset Range">
+            <button class="reset-date-btn" onclick="resetDates(); triggerHaptic()" title="Reset Range">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
             </button>
         </div>
@@ -1122,19 +1293,19 @@
 
 <!-- BOTTOM NAVIGATION (Floating Glass Pill) -->
 <nav class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('diet', this)">
+    <div class="nav-item active" onclick="switchTab('diet', this); triggerHaptic()">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
         </svg>
         <span class="nav-label">Plan</span>
     </div>
-    <div class="nav-item" onclick="switchTab('workout', this)">
+    <div class="nav-item" onclick="switchTab('workout', this); triggerHaptic()">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
             <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7z"/>
         </svg>
         <span class="nav-label">Workout</span>
     </div>
-    <div class="nav-item" onclick="switchTab('tracker', this)">
+    <div class="nav-item" onclick="switchTab('tracker', this); triggerHaptic()">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
             <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
         </svg>
@@ -1148,7 +1319,7 @@
         <div class="award-icon">🏆</div>
         <h2>Goal Crushed!</h2>
         <p>You completed 45 minutes of brisk walking.</p>
-        <button class="award-close-btn" onclick="closeAward()">Awesome!</button>
+        <button class="award-close-btn" onclick="closeAward(); triggerHaptic()">Awesome!</button>
     </div>
 </div>
 
@@ -1160,7 +1331,7 @@
         </div>
         <div class="modal-header-bar">
             <div id="modal-day-title" class="modal-day-title">Monday</div>
-            <button class="modal-close-btn" onclick="closeDayModal()">✕</button>
+            <button class="modal-close-btn" onclick="closeDayModal(); triggerHaptic()">✕</button>
         </div>
         <div id="modal-body-content" class="modal-body-content">
             <!-- Content Injected Here -->
@@ -1180,6 +1351,13 @@
 <div id="save-status" class="save-status">✓ Saved</div>
 
 <script>
+    // --- HAPTIC FEEDBACK ---
+    function triggerHaptic() {
+        if (navigator.vibrate) {
+            navigator.vibrate(15); // Short, sharp tick
+        }
+    }
+
     // --- TAB NAVIGATION ---
     function switchTab(tabId, element) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
@@ -1273,6 +1451,7 @@
 
         if (currentTranslateY > 150) {
             // Dragged far enough: Close
+            triggerHaptic();
             modalSheet.style.transform = 'translateY(100%)';
             setTimeout(() => {
                 closeDayModal();
@@ -1382,6 +1561,7 @@
 
         // Show Modal
         document.getElementById('award-modal').classList.add('active');
+        triggerHaptic();
     }
 
     function closeAward() {
