@@ -9,6 +9,8 @@
     <title>Diet Plan</title>
     <!-- Add Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Add Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
             /* Apple Fitness Palette */
@@ -131,7 +133,6 @@
 
         /* MEAL PLAN */
         .days-container { display: grid; gap: 15px; }
-        
         .day-card { 
             background-color: var(--card-color); 
             border-radius: var(--radius-lg); 
@@ -142,7 +143,6 @@
         }
         .day-card:active { transform: scale(0.98); background-color: #252525; }
         
-        /* Tap indication arrow */
         .day-card::after {
             content: '›';
             position: absolute;
@@ -157,7 +157,7 @@
         .day-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid var(--divider);
-            padding-right: 20px; /* Space for arrow */
+            padding-right: 20px; 
         }
         .day-name { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
         
@@ -194,9 +194,9 @@
             padding-top: max(20px, env(safe-area-inset-top));
             padding-bottom: max(20px, env(safe-area-inset-bottom));
             overflow-y: auto;
-            overflow-x: hidden; /* Prevent horizontal movement */
-            overscroll-behavior: none; /* Prevent iOS rubber-band bouncing */
-            -webkit-overflow-scrolling: touch; /* Keep scrolling smooth */
+            overflow-x: hidden; 
+            overscroll-behavior: none; 
+            -webkit-overflow-scrolling: touch;
             animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .day-modal.active { display: flex; }
@@ -205,7 +205,7 @@
         .modal-header-bar {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px; border-bottom: 1px solid var(--divider); padding-bottom: 20px;
-            flex-shrink: 0; /* Prevent header from shrinking when scrolling */
+            flex-shrink: 0;
         }
         .modal-day-title { font-size: 2.5rem; font-weight: 800; color: var(--fitness-green); letter-spacing: -1px; }
         .modal-close-btn {
@@ -215,13 +215,11 @@
             font-size: 1.5rem; cursor: pointer;
         }
 
-        /* Large Font Styles for Modal */
         .modal-body-content { padding-bottom: 50px; }
         .modal-meal-row { margin-bottom: 50px; padding-left: 25px; border-left: 6px solid var(--divider); }
         .modal-meal-type { font-size: 1.3rem; color: var(--fitness-orange); text-transform: uppercase; font-weight: 800; margin-bottom: 15px; letter-spacing: 1px; }
         .modal-meal-desc { font-size: 1.8rem; line-height: 1.4; color: white; margin-bottom: 20px; font-weight: 500; }
         .modal-badges-wrapper { transform: scale(1.2); transform-origin: left; }
-
 
         /* WALKING TOOL */
         .walking-tool-card {
@@ -244,10 +242,7 @@
             align-items: center;
         }
 
-        .progress-ring__circle-bg {
-            stroke: #2c2c2e;
-        }
-
+        .progress-ring__circle-bg { stroke: #2c2c2e; }
         .progress-ring__circle {
             stroke: var(--fitness-green);
             stroke-linecap: round;
@@ -257,11 +252,7 @@
             filter: drop-shadow(0 0 4px rgba(164, 255, 0, 0.4));
         }
 
-        .timer-value-container {
-            position: absolute;
-            text-align: center;
-        }
-
+        .timer-value-container { position: absolute; text-align: center; }
         .timer-display {
             font-size: 3.5rem;
             font-weight: 800;
@@ -270,7 +261,6 @@
             line-height: 1;
             letter-spacing: -1px;
         }
-
         .timer-label {
             font-size: 0.9rem;
             color: var(--fitness-green);
@@ -303,6 +293,34 @@
         .s-val { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); font-family: "SF Pro Rounded", sans-serif; }
         .s-lbl { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
 
+        /* CALENDAR ACTIVITY GRID */
+        .calendar-card {
+            background-color: var(--card-color);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            margin-top: 15px;
+        }
+        .calendar-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; color: var(--text-primary); font-weight: 700; font-size: 1.1rem;
+        }
+        .cal-nav-btn {
+            background: rgba(255,255,255,0.1); border: none; color: var(--fitness-green);
+            width: 32px; height: 32px; border-radius: 50%;
+            font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; padding-bottom: 3px;
+        }
+        .calendar-days-header {
+            display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 10px; text-align: center;
+        }
+        .calendar-days-header span { font-size: 0.7rem; color: var(--text-secondary); font-weight: 600; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .cal-day-cell { display: flex; justify-content: center; align-items: center; }
+        .cal-ring-container {
+            width: 100%; aspect-ratio: 1; position: relative;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .cal-day-num { position: absolute; font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; }
+
         .technique-list li {
             margin-bottom: 12px; padding-left: 20px; position: relative;
             color: var(--text-secondary); font-size: 0.95rem;
@@ -314,29 +332,21 @@
             display: flex; gap: 10px; margin-bottom: 20px;
             background: var(--card-color); padding: 15px;
             border-radius: var(--radius-lg); justify-content: space-between;
-            align-items: flex-end; /* Align inputs and button */
+            align-items: flex-end;
         }
         .date-input-group { display: flex; flex-direction: column; flex: 1; }
         .date-input-group label { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
         .date-input {
             background: #2c2c2e; border: none; color: white;
             padding: 8px; border-radius: 8px; font-family: inherit; font-size: 0.9rem;
-            width: 100%; -webkit-appearance: none;
-            height: 38px;
+            width: 100%; -webkit-appearance: none; height: 38px;
         }
         
         .reset-date-btn {
-            background: #3a3a3c;
-            border: none;
-            color: var(--text-secondary);
-            border-radius: 8px;
-            width: 40px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            background: #3a3a3c; border: none; color: var(--text-secondary);
+            border-radius: 8px; width: 40px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: opacity 0.2s;
         }
         .reset-date-btn:active { opacity: 0.7; }
 
@@ -369,7 +379,7 @@
         .diff-loss { color: var(--fitness-green); }
         .diff-gain { color: var(--fitness-red); }
 
-        /* BOTTOM NAVIGATION - iOS Style */
+        /* BOTTOM NAVIGATION */
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -377,8 +387,7 @@
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border-top: 0.5px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-around;
+            display: flex; justify-content: space-around;
             padding-top: 12px;
             padding-bottom: max(15px, env(safe-area-inset-bottom));
             z-index: 1000;
@@ -386,29 +395,54 @@
         }
 
         .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #636366; 
-            transition: all 0.2s ease;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; color: #636366; transition: all 0.2s ease;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
         }
-
         .nav-item.active { color: #a4ff00; }
-
         .nav-icon {
             width: 26px; height: 26px; margin-bottom: 6px; fill: currentColor;
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        
-        .nav-item.active .nav-icon {
-            transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(164, 255, 0, 0.4));
-        }
-
+        .nav-item.active .nav-icon { transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(164, 255, 0, 0.4)); }
         .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+
+        /* CELEBRATION MODAL */
+        .award-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .award-modal.active { display: flex; }
+        .award-content {
+            background: #1c1c1e;
+            padding: 40px 30px;
+            border-radius: 30px;
+            text-align: center;
+            border: 1px solid rgba(164, 255, 0, 0.3);
+            box-shadow: 0 0 50px rgba(164, 255, 0, 0.2);
+            transform: scale(0.9);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            max-width: 90%;
+        }
+        @keyframes popIn { to { transform: scale(1); } }
+        
+        .award-icon { font-size: 80px; margin-bottom: 10px; display: block; animation: bounce 1.5s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        
+        .award-content h2 { color: #a4ff00; font-size: 2rem; margin: 0 0 10px 0; font-weight: 800; letter-spacing: -1px; }
+        .award-content p { color: #fff; margin-bottom: 30px; font-size: 1.1rem; }
+        .award-close-btn {
+            background: #a4ff00; color: #000; border: none;
+            padding: 15px 40px; border-radius: 30px; font-weight: 700;
+            font-size: 1.1rem; cursor: pointer; transition: transform 0.1s;
+        }
+        .award-close-btn:active { transform: scale(0.95); }
 
         /* iOS INSTALL PROMPT */
         .ios-prompt {
@@ -716,6 +750,21 @@
                 <li><strong>Target:</strong> 45 Mins Daily (Morning).</li>
             </ul>
         </div>
+
+        <h3 class="section-title">Activity Calendar</h3>
+        <div class="calendar-card">
+            <div class="calendar-header">
+                <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+                <span id="cal-month-year"></span>
+                <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+            </div>
+            <div class="calendar-days-header">
+                <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+            </div>
+            <div class="calendar-grid" id="activity-grid">
+                <!-- Grid items generated by JS -->
+            </div>
+        </div>
     </div>
 
     <!-- VIEW: TRACKER (WEIGHT) -->
@@ -771,6 +820,16 @@
         <span class="nav-label">Progress</span>
     </div>
 </nav>
+
+<!-- CELEBRATION MODAL -->
+<div id="award-modal" class="award-modal">
+    <div class="award-content">
+        <div class="award-icon">🏆</div>
+        <h2>Goal Crushed!</h2>
+        <p>You completed 45 minutes of brisk walking.</p>
+        <button class="award-close-btn" onclick="closeAward()">Awesome!</button>
+    </div>
+</div>
 
 <!-- FULL SCREEN DAY MODAL -->
 <div id="day-modal" class="day-modal">
@@ -847,6 +906,10 @@
     const KEY_REMAINING = 'walkRemaining';      // Saved remaining ms when paused
     const KEY_IS_RUNNING = 'walkIsRunning';
     const KEY_LAST_BEEP = 'walkLastBeepMin';    // Track last beep minute to avoid double triggers
+    const KEY_ACTIVITY_LOG = 'walkActivityLog'; // { "YYYY-MM-DD": minutes }
+
+    // Init Calendar View Date (Must be defined before usage)
+    let calendarViewDate = new Date();
 
     let timerInterval;
     const timerDisplay = document.getElementById('walk-timer');
@@ -902,6 +965,42 @@
         playTone(1760, t + 2.4, 1.0); // Final High Tone (2.4s - 3.4s)
     }
 
+    // CELEBRATION LOGIC
+    function showAward() {
+        // Launch Confetti
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#a4ff00', '#ffffff'] // Neon green & white
+        });
+
+        // Show Modal
+        document.getElementById('award-modal').classList.add('active');
+
+        // Play Victory Sound (Major Arpeggio)
+        if(audioCtx) {
+            const t = audioCtx.currentTime;
+            const playNote = (f, s) => {
+                const osc = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                osc.connect(g); g.connect(audioCtx.destination);
+                osc.frequency.value = f;
+                g.gain.setValueAtTime(0.1, s);
+                g.gain.exponentialRampToValueAtTime(0.001, s + 0.5);
+                osc.start(s); osc.stop(s + 0.5);
+            };
+            playNote(523.25, t);       // C5
+            playNote(659.25, t + 0.1); // E5
+            playNote(783.99, t + 0.2); // G5
+            playNote(1046.50, t + 0.3); // C6
+        }
+    }
+
+    function closeAward() {
+        document.getElementById('award-modal').classList.remove('active');
+    }
+
     initTimer();
 
     function initTimer() {
@@ -913,6 +1012,7 @@
             setBtnStart();
         }
         updateTimerVisuals(); // Immediate render
+        renderCalendar(); // New Calendar Function
     }
 
     function toggleTimer() {
@@ -937,6 +1037,7 @@
             localStorage.setItem(KEY_IS_RUNNING, 'false');
             localStorage.removeItem(KEY_TARGET_END);
             
+            logDailyActivity(remaining); // Save progress
             setBtnStart();
             updateTimerVisuals();
         } else {
@@ -963,14 +1064,16 @@
             localStorage.setItem(KEY_IS_RUNNING, 'false');
             localStorage.setItem(KEY_REMAINING, 0);
             localStorage.removeItem(KEY_TARGET_END);
-            playBeep(); // Final alarm
+            
+            logDailyActivity(0); // Log complete (0 remaining)
+            showAward(); // TRIGGER CELEBRATION
+            
             setBtnStart();
             updateTimerVisuals();
             return;
         }
 
         // Alarm Logic (Every 5 mins i.e., when passed 40, 35, 30...)
-        // We check if we just crossed a 5-min threshold
         const elapsedMinutes = (GOAL_MS - remaining) / 1000 / 60;
         const currentBlock = Math.floor(elapsedMinutes / 5); 
         const lastBlock = parseInt(localStorage.getItem(KEY_LAST_BEEP) || 0);
@@ -981,6 +1084,11 @@
         }
 
         updateTimerVisuals(remaining);
+        
+        // Auto-save progress every minute (optional but good for crash recovery)
+        if (Math.floor(Date.now() / 1000) % 60 === 0) {
+             logDailyActivity(remaining);
+        }
     }
 
     function updateTimerVisuals(forceRemaining) {
@@ -1012,6 +1120,25 @@
         setProgress(percent);
     }
 
+    function logDailyActivity(remainingMs) {
+        const completedMs = GOAL_MS - remainingMs;
+        const mins = completedMs / 1000 / 60;
+        
+        // Use YYYY-MM-DD as key
+        const todayKey = new Date().toISOString().split('T')[0];
+        
+        let log = JSON.parse(localStorage.getItem(KEY_ACTIVITY_LOG) || '{}');
+        
+        // Only update if current session is more (e.g. didn't reset)
+        // Or strictly add up sessions? For simplicity, let's say "Max achieved today"
+        // Or if you want cumulative: log[todayKey] = (log[todayKey] || 0) + sessionDiff... too complex for now.
+        // Let's assume the timer represents "Today's Walk".
+        log[todayKey] = Math.max(log[todayKey] || 0, mins); 
+        
+        localStorage.setItem(KEY_ACTIVITY_LOG, JSON.stringify(log));
+        renderCalendar();
+    }
+
     function resetWalk() {
         clearInterval(timerInterval);
         localStorage.removeItem(KEY_TARGET_END);
@@ -1022,6 +1149,85 @@
         setBtnStart();
         updateTimerVisuals();
         setProgress(0);
+    }
+
+    // --- ACTIVITY CALENDAR RENDERER ---
+    function changeMonth(offset) {
+        calendarViewDate.setMonth(calendarViewDate.getMonth() + offset);
+        renderCalendar();
+    }
+
+    function renderCalendar() {
+        const grid = document.getElementById('activity-grid');
+        const monthLabel = document.getElementById('cal-month-year');
+        if(!grid) return;
+
+        grid.innerHTML = '';
+        const year = calendarViewDate.getFullYear();
+        const month = calendarViewDate.getMonth();
+        
+        monthLabel.textContent = calendarViewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+        const firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Sunday
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const activityLog = JSON.parse(localStorage.getItem(KEY_ACTIVITY_LOG) || '{}');
+
+        // Empty cells for days before the 1st
+        for (let i = 0; i < firstDayIndex; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cal-day-cell empty';
+            grid.appendChild(cell);
+        }
+
+        // Days
+        for (let i = 1; i <= daysInMonth; i++) {
+            // Construct YYYY-MM-DD key manually to avoid timezone issues
+            const m = String(month + 1).padStart(2, '0');
+            const d = String(i).padStart(2, '0');
+            const safeKey = `${year}-${m}-${d}`;
+
+            const minsDone = activityLog[safeKey] || 0;
+            const percent = Math.min(100, (minsDone / 45) * 100); // 45 is goal
+
+            const cell = document.createElement('div');
+            cell.className = 'cal-day-cell';
+            
+            // SVG Circle for Ring
+            // If < 100% show faint or red? If done show green.
+            // Let's do: Green if any progress, just partial ring.
+            const ringColor = '#a4ff00';
+            
+            // Mini Ring SVG
+            const svgHtml = `
+                <div class="cal-ring-container">
+                    <svg width="36" height="36" viewBox="0 0 36 36">
+                        <path
+                            d="M18 2.0845
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="#2c2c2e"
+                            stroke-width="3"
+                        />
+                        <path
+                            d="M18 2.0845
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="${percent > 0 ? ringColor : 'none'}"
+                            stroke-width="3"
+                            stroke-dasharray="${percent}, 100"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+                    <span class="cal-day-num">${i}</span>
+                </div>
+            `;
+            
+            cell.innerHTML = svgHtml;
+            grid.appendChild(cell);
+        }
     }
 
     function setBtnStart() { 
