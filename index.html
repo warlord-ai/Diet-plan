@@ -15,11 +15,17 @@
         :root {
             /* Apple Fitness Palette */
             --bg-color: #000000;
-            --card-color: #1c1c1e;
+            
+            /* Liquid Glass Variables */
+            --glass-bg: rgba(28, 28, 30, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
+            --glass-blur: 25px;
+            
             --text-primary: #ffffff;
             --text-secondary: #8e8e93;
-            --divider: #2c2c2e;
-            --nav-bg: rgba(28, 28, 30, 0.95);
+            --divider: rgba(255, 255, 255, 0.1);
+            --nav-bg: rgba(20, 20, 20, 0.85);
             
             /* Neon Accents */
             --fitness-red: #fa114f;    /* Calories/Move */
@@ -27,16 +33,16 @@
             --fitness-cyan: #00e0ff;   /* Stand/Fasting */
             --fitness-orange: #ff9500; /* Warm accent */
             
-            --radius-lg: 20px;
-            --radius-sm: 8px;
-            --bottom-nav-height: 85px;
+            --radius-lg: 24px; /* More rounded for liquid feel */
+            --radius-sm: 12px;
+            --bottom-nav-height: 110px; /* Increased to account for floating space */
         }
 
         /* GLOBAL RESET */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html { overflow-x: hidden; background-color: var(--bg-color); }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-primary);
             margin: 0;
@@ -50,6 +56,22 @@
             display: flex;
             flex-direction: column;
         }
+
+        /* Ambient Background Light (Creates the Liquid effect) */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20%;
+            left: -20%;
+            width: 140%;
+            height: 80%;
+            background: radial-gradient(circle at 50% 0%, rgba(30, 30, 35, 1) 0%, rgba(0,0,0,0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* HIDE SCROLLBARS (Native iOS Feel) */
+        ::-webkit-scrollbar { display: none; }
 
         /* SCROLLABLE CONTENT AREA */
         .app-content {
@@ -67,19 +89,35 @@
         /* TAB VIEWS */
         .view-section {
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .view-section.active { display: block; }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         /* HEADER */
-        header { padding: 10px 0 20px 0; text-align: left; }
-        h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; }
-        h2 { margin-top: 5px; font-weight: 500; font-size: 1rem; color: var(--fitness-red); text-transform: uppercase; letter-spacing: 1px; }
+        header { padding: 10px 10px 20px 10px; text-align: left; }
+        h1 { 
+            margin: 0; font-size: 34px; font-weight: 800; letter-spacing: 0.3px; line-height: 1.1; 
+            background: linear-gradient(180deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        h2 { margin-top: 5px; font-weight: 600; font-size: 13px; color: var(--fitness-red); text-transform: uppercase; letter-spacing: -0.2px; }
+
+        /* COMMON GLASS CARD STYLE */
+        .glass-panel {
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+            transition: transform 0.2s, background-color 0.2s;
+        }
 
         /* SUMMARY GRID */
         .summary-grid {
@@ -88,148 +126,174 @@
             gap: 12px;
             margin-bottom: 30px;
             width: 100%;
+            padding: 0 5px;
         }
 
         .stat-card {
-            background-color: var(--card-color);
-            border-radius: var(--radius-lg);
             padding: 15px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             min-height: 90px;
+            background: linear-gradient(145deg, rgba(40,40,44,0.7), rgba(20,20,22,0.7));
         }
 
-        .stat-value { font-size: 1.5rem; font-weight: 700; font-family: "SF Pro Rounded", system-ui, sans-serif; }
-        .stat-label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px; }
+        .stat-value { font-size: 1.6rem; font-weight: 700; font-family: "SF Pro Rounded", system-ui, sans-serif; letter-spacing: 0.5px; filter: drop-shadow(0 0 8px rgba(255,255,255,0.15)); }
+        .stat-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-top: 4px; }
 
         /* SECTION TITLES */
         .section-title {
-            font-size: 1.2rem;
+            font-size: 1.35rem;
             font-weight: 700;
-            margin-bottom: 15px;
-            margin-top: 25px;
+            margin-bottom: 12px;
+            margin-top: 30px;
             color: var(--text-primary);
             display: flex;
             align-items: center;
-        }
-        .section-title::before {
-            content: ''; display: inline-block; width: 4px; height: 20px;
-            background: var(--fitness-green); margin-right: 10px; border-radius: 2px;
+            padding-left: 10px;
+            letter-spacing: 0.3px;
+            opacity: 0.9;
         }
 
         /* INFO CARDS */
-        .protocol-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .protocol-grid { display: grid; grid-template-columns: 1fr; gap: 15px; padding: 0 5px; }
         @media (min-width: 600px) { .protocol-grid { grid-template-columns: 1fr 1fr; } }
 
         .info-card {
-            background-color: var(--card-color);
             padding: 20px;
-            border-radius: var(--radius-lg);
+            background: var(--glass-bg);
         }
         .info-card h4 { margin: 0 0 8px 0; color: var(--fitness-cyan); font-size: 1rem; }
-        .info-card p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4; }
+        .info-card p { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4; }
         .info-card strong { color: var(--text-primary); }
 
         /* MEAL PLAN */
-        .days-container { display: grid; gap: 15px; }
+        .days-container { display: grid; gap: 12px; padding: 0 5px; }
         .day-card { 
-            background-color: var(--card-color); 
-            border-radius: var(--radius-lg); 
             padding: 18px; 
             cursor: pointer; 
-            transition: transform 0.1s, background-color 0.2s;
             position: relative;
         }
-        .day-card:active { transform: scale(0.98); background-color: #252525; }
+        .day-card:active { transform: scale(0.98); background-color: rgba(60, 60, 65, 0.6); }
         
         .day-card::after {
             content: '›';
             position: absolute;
             right: 20px;
-            top: 20px;
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-            font-weight: bold;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.4rem;
+            color: rgba(255,255,255,0.3);
+            font-weight: 600;
             line-height: 1;
         }
 
         .day-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid var(--divider);
-            padding-right: 20px; 
+            margin-bottom: 12px; padding-bottom: 12px; border-bottom: 0.5px solid var(--divider);
+            padding-right: 25px; 
         }
-        .day-name { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+        .day-name { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         
         /* Stats row in header */
-        .day-stats { display: flex; gap: 10px; }
-        .stat-badge { font-size: 0.8rem; font-weight: 600; padding: 2px 6px; border-radius: 6px; }
-        .stat-cals { color: var(--fitness-red); border: 1px solid rgba(250, 17, 79, 0.3); }
-        .stat-prot { color: var(--fitness-green); border: 1px solid rgba(164, 255, 0, 0.3); }
+        .day-stats { display: flex; gap: 8px; }
+        .stat-badge { font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.3px; backdrop-filter: blur(4px); }
+        .stat-cals { color: var(--fitness-red); background: rgba(250, 17, 79, 0.15); border: 1px solid rgba(250, 17, 79, 0.2); }
+        .stat-prot { color: var(--fitness-green); background: rgba(164, 255, 0, 0.15); border: 1px solid rgba(164, 255, 0, 0.2); }
         
-        .meal-row { margin-bottom: 15px; padding-left: 12px; border-left: 2px solid var(--divider); }
+        .meal-row { margin-bottom: 15px; padding-left: 0; }
         .meal-row:last-child { margin-bottom: 0; }
-        .meal-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 3px; font-weight: 600; }
-        .meal-content { font-size: 0.95rem; color: var(--text-primary); margin-bottom: 5px; }
+        .meal-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600; letter-spacing: 0.5px; opacity: 0.8; }
+        .meal-content { font-size: 1rem; color: var(--text-primary); margin-bottom: 6px; line-height: 1.3; }
 
         /* BADGES */
         .badges-wrapper { display: flex; gap: 6px; flex-wrap: wrap; }
-        .badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
-        .badge-protein { color: #000; background-color: var(--fitness-green); }
+        .badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; font-weight: 600; display: inline-block; backdrop-filter: blur(5px); }
+        .badge-protein { color: #000; background-color: var(--fitness-green); box-shadow: 0 0 10px rgba(164, 255, 0, 0.3); }
         .badge-millet { color: #000; background-color: var(--fitness-orange); }
-        .badge-info { color: var(--fitness-cyan); background-color: rgba(0, 224, 255, 0.15); }
-        .badge-cal { color: var(--fitness-red); border: 1px solid rgba(250, 17, 79, 0.3); background: transparent; }
+        .badge-info { color: var(--fitness-cyan); background-color: rgba(0, 224, 255, 0.15); border: 1px solid rgba(0, 224, 255, 0.2); }
+        .badge-cal { color: var(--fitness-red); border: 1px solid rgba(250, 17, 79, 0.3); background: rgba(250, 17, 79, 0.05); }
 
-        /* FULL SCREEN MODAL (ELDERLY FRIENDLY) */
+        /* FULL SCREEN MODAL (SHEET STYLE) */
         .day-modal {
             position: fixed;
             top: 0; left: 0;
             width: 100vw;
             height: 100vh;
-            background: #000000;
+            background: rgba(0, 0, 0, 0.6); /* Dim background */
+            backdrop-filter: blur(15px);
             z-index: 2000;
             display: none;
             flex-direction: column;
-            padding: 20px;
-            padding-top: max(20px, env(safe-area-inset-top));
-            padding-bottom: max(20px, env(safe-area-inset-bottom));
-            overflow-y: auto;
-            overflow-x: hidden; 
-            overscroll-behavior: none; 
-            -webkit-overflow-scrolling: touch;
-            animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            justify-content: flex-end; /* Sheet coming from bottom */
+            animation: fadeInModal 0.2s ease;
         }
         .day-modal.active { display: flex; }
-        @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+
+        /* The actual sheet card */
+        .modal-sheet {
+            background: #121212;
+            width: 100%;
+            height: 92vh;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 0 20px 20px 20px;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUpSheet 0.35s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+            border-top: 1px solid var(--glass-border);
+        }
+        @keyframes slideUpSheet { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* Modal Handle */
+        .modal-handle-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding-top: 15px;
+            padding-bottom: 25px;
+            position: sticky;
+            top: 0;
+            background: #121212;
+            z-index: 10;
+        }
+        .modal-handle {
+            width: 36px;
+            height: 5px;
+            background-color: #3a3a3c;
+            border-radius: 3px;
+        }
 
         .modal-header-bar {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px; border-bottom: 1px solid var(--divider); padding-bottom: 20px;
+            margin-bottom: 20px; border-bottom: 0.5px solid var(--divider); padding-bottom: 20px;
             flex-shrink: 0;
         }
-        .modal-day-title { font-size: 2.5rem; font-weight: 800; color: var(--fitness-green); letter-spacing: -1px; }
+        .modal-day-title { font-size: 2.2rem; font-weight: 800; color: white; letter-spacing: -0.5px; }
         .modal-close-btn {
-            background: rgba(255,255,255,0.1); color: white; border: none;
-            width: 44px; height: 44px; border-radius: 50%;
+            background: #2c2c2e; color: #8e8e93; border: none;
+            width: 32px; height: 32px; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            font-size: 1.5rem; cursor: pointer;
+            font-size: 1rem; cursor: pointer; font-weight: 700;
         }
 
-        .modal-body-content { padding-bottom: 50px; }
-        .modal-meal-row { margin-bottom: 50px; padding-left: 25px; border-left: 6px solid var(--divider); }
-        .modal-meal-type { font-size: 1.3rem; color: var(--fitness-orange); text-transform: uppercase; font-weight: 800; margin-bottom: 15px; letter-spacing: 1px; }
-        .modal-meal-desc { font-size: 1.8rem; line-height: 1.4; color: white; margin-bottom: 20px; font-weight: 500; }
-        .modal-badges-wrapper { transform: scale(1.2); transform-origin: left; }
+        .modal-body-content { padding-bottom: 80px; }
+        .modal-meal-row { margin-bottom: 40px; }
+        .modal-meal-type { font-size: 0.9rem; color: var(--fitness-orange); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
+        .modal-meal-desc { font-size: 1.5rem; line-height: 1.3; color: white; margin-bottom: 15px; font-weight: 600; font-family: "SF Pro Rounded"; }
+        .modal-badges-wrapper { transform: scale(1.1); transform-origin: left; }
 
         /* WALKING TOOL */
         .walking-tool-card {
-            background-color: var(--card-color);
-            padding: 30px 20px;
-            border-radius: var(--radius-lg);
+            padding: 40px 20px;
             display: flex; flex-direction: column; align-items: center;
             margin-top: 10px;
             position: relative;
             overflow: hidden;
+            margin-left: 5px; margin-right: 5px;
+            background: linear-gradient(180deg, rgba(30,30,35,0.7), rgba(15,15,18,0.7));
         }
 
         .ring-container {
@@ -242,32 +306,35 @@
             align-items: center;
         }
 
-        .progress-ring__circle-bg { stroke: #2c2c2e; }
+        .progress-ring__circle-bg { stroke: rgba(255,255,255,0.05); }
         .progress-ring__circle {
             stroke: var(--fitness-green);
             stroke-linecap: round;
             transition: stroke-dashoffset 0.35s;
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
-            filter: drop-shadow(0 0 4px rgba(164, 255, 0, 0.4));
+            filter: drop-shadow(0 0 8px rgba(164, 255, 0, 0.5)); /* Stronger neon glow */
         }
 
         .timer-value-container { position: absolute; text-align: center; }
         .timer-display {
-            font-size: 3.5rem;
-            font-weight: 800;
+            font-size: 3.8rem;
+            font-weight: 700;
             color: var(--text-primary);
             font-variant-numeric: tabular-nums;
             line-height: 1;
             letter-spacing: -1px;
+            font-family: "SF Pro Rounded";
+            text-shadow: 0 0 20px rgba(164, 255, 0, 0.15);
         }
         .timer-label {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: var(--fitness-green);
             text-transform: uppercase;
-            font-weight: 600;
+            font-weight: 700;
             margin-top: 5px;
             letter-spacing: 1px;
+            opacity: 0.9;
         }
 
         .controls { display: flex; align-items: center; gap: 40px; margin-bottom: 20px; z-index: 10; }
@@ -276,12 +343,13 @@
             width: 75px; height: 75px; border-radius: 50%; border: none;
             font-size: 1.6rem; display: flex; justify-content: center; align-items: center;
             cursor: pointer; transition: transform 0.1s;
+            backdrop-filter: blur(10px);
         }
-        .btn-round:active { transform: scale(0.95); }
+        .btn-round:active { transform: scale(0.95); opacity: 0.8; }
         
-        .start-btn { background-color: var(--fitness-green); color: #000; box-shadow: 0 0 15px rgba(164, 255, 0, 0.3); }
-        .stop-btn { background-color: var(--fitness-red); color: #fff; box-shadow: 0 0 15px rgba(250, 17, 79, 0.3); }
-        .reset-btn { background-color: #3a3a3c; color: var(--text-secondary); width: 50px; height: 50px; font-size: 1rem;}
+        .start-btn { background-color: var(--fitness-green); color: #000; box-shadow: 0 0 20px rgba(164, 255, 0, 0.3); }
+        .stop-btn { background-color: var(--fitness-red); color: #fff; box-shadow: 0 0 20px rgba(250, 17, 79, 0.3); }
+        .reset-btn { background-color: rgba(60, 60, 65, 0.4); color: var(--text-primary); width: 50px; height: 50px; font-size: 1rem; border: 1px solid rgba(255,255,255,0.1); }
 
         .session-stats {
             width: 100%;
@@ -291,21 +359,20 @@
         }
         .s-stat { text-align: center; }
         .s-val { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); font-family: "SF Pro Rounded", sans-serif; }
-        .s-lbl { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .s-lbl { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
 
         /* CALENDAR ACTIVITY GRID */
         .calendar-card {
-            background-color: var(--card-color);
             padding: 20px;
-            border-radius: var(--radius-lg);
             margin-top: 15px;
+            margin-left: 5px; margin-right: 5px;
         }
         .calendar-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 15px; color: var(--text-primary); font-weight: 700; font-size: 1.1rem;
         }
         .cal-nav-btn {
-            background: rgba(255,255,255,0.1); border: none; color: var(--fitness-green);
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--fitness-green);
             width: 32px; height: 32px; border-radius: 50%;
             font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; padding-bottom: 3px;
         }
@@ -329,64 +396,65 @@
 
         /* TRACKER & DATE RANGE */
         .date-range-container {
-            display: flex; gap: 10px; margin-bottom: 20px;
-            background: var(--card-color); padding: 15px;
-            border-radius: var(--radius-lg); justify-content: space-between;
-            align-items: flex-end;
+            display: flex; gap: 15px; margin-bottom: 20px;
+            padding: 15px 20px;
+            justify-content: space-between;
+            align-items: center;
+            margin-left: 5px; margin-right: 5px;
         }
         .date-input-group { display: flex; flex-direction: column; flex: 1; }
-        .date-input-group label { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
+        .date-input-group label { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
         .date-input {
-            background: #2c2c2e; border: none; color: white;
-            padding: 8px; border-radius: 8px; font-family: inherit; font-size: 0.9rem;
-            width: 100%; -webkit-appearance: none; height: 38px;
+            background: transparent; border: none; color: var(--fitness-green);
+            padding: 0; font-family: inherit; font-size: 1.1rem; font-weight: 600;
+            width: 100%; -webkit-appearance: none;
+        }
+        .date-input::-webkit-calendar-picker-indicator {
+            filter: invert(1); opacity: 0.5;
         }
         
         .reset-date-btn {
-            background: #3a3a3c; border: none; color: var(--text-secondary);
-            border-radius: 8px; width: 40px; height: 38px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary);
+            border-radius: 50%; width: 36px; height: 36px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: opacity 0.2s;
         }
-        .reset-date-btn:active { opacity: 0.7; }
+        .reset-date-btn:active { background: rgba(255,255,255,0.15); }
 
         /* CHART CONTAINER */
         .chart-wrapper {
-            background-color: var(--card-color);
-            border-radius: var(--radius-lg);
             padding: 15px;
             margin-bottom: 20px;
             height: 250px;
             position: relative;
+            margin-left: 5px; margin-right: 5px;
         }
 
         /* UPDATED TRACKER LIST (iOS Style) */
         .tracker-grid {
             display: flex;
             flex-direction: column;
-            background-color: var(--card-color);
-            border-radius: var(--radius-lg);
-            padding: 0; /* Flush to edges of card */
-            overflow: hidden; /* For rounded corners on first/last items */
-            gap: 1px; /* Divider effect if using background gap, but border is better */
-            border: 1px solid rgba(255,255,255,0.05); /* Subtle border around group */
+            padding: 0; 
+            overflow: hidden; 
+            gap: 0; 
+            margin-left: 5px; margin-right: 5px;
         }
         
         .tracker-cell {
-            background-color: var(--card-color); /* Matches container */
+            background-color: transparent; 
             padding: 16px 20px;
             display: flex;
             flex-direction: row;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 0.5px solid var(--divider);
             position: relative;
         }
         .tracker-cell:last-child {
             border-bottom: none;
         }
         .tracker-cell:active {
-            background-color: #2c2c2e; /* Touch feedback */
+            background-color: rgba(255,255,255,0.05); 
         }
 
         .tracker-date {
@@ -394,7 +462,7 @@
             color: var(--text-primary);
             font-weight: 500;
             margin: 0;
-            flex: 1; /* Push others to right */
+            flex: 1; 
             text-align: left;
         }
 
@@ -408,12 +476,13 @@
             width: 80px;
             background: transparent;
             border: none;
-            color: white; /* White for value */
+            color: white; 
             font-size: 1.1rem;
             font-weight: 600;
             text-align: right;
             margin: 0;
             padding: 0;
+            font-family: "SF Pro Rounded";
         }
         /* Remove spinner on number input */
         .tracker-input::-webkit-outer-spin-button,
@@ -443,45 +512,78 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(4px);
         }
         .diff-loss { color: #000; background-color: var(--fitness-green); }
         .diff-gain { color: #fff; background-color: var(--fitness-red); }
         .diff-neutral { color: var(--text-secondary); background: rgba(255,255,255,0.1); }
 
 
-        /* BOTTOM NAVIGATION */
+        /* BOTTOM NAVIGATION (Floating Glass Pill) */
         .bottom-nav {
             position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: rgba(10, 10, 10, 0.85);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-top: 0.5px solid rgba(255,255,255,0.1);
-            display: flex; justify-content: space-around;
-            padding-top: 12px;
-            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            bottom: max(20px, env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 380px;
+            background: rgba(35, 35, 35, 0.65); /* Darker glass */
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            border-radius: 40px; /* Pill Shape */
+            display: flex; justify-content: space-evenly;
+            align-items: center;
+            padding: 12px 20px;
             z-index: 1000;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
         }
 
         .nav-item {
-            flex: 1; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; color: #636366; transition: all 0.2s ease;
-            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; 
+            color: rgba(255, 255, 255, 0.4); /* Dim inactive state */
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer; 
+            -webkit-tap-highlight-color: transparent;
+            width: 60px;
+            position: relative;
         }
-        .nav-item.active { color: #a4ff00; }
+        
+        .nav-item.active { color: #ffffff; }
+        
         .nav-icon {
-            width: 26px; height: 26px; margin-bottom: 6px; fill: currentColor;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 26px; height: 26px; 
+            margin-bottom: 4px; 
+            fill: currentColor;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
-        .nav-item.active .nav-icon { transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(164, 255, 0, 0.4)); }
-        .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+        
+        .nav-item.active .nav-icon { 
+            transform: translateY(-2px) scale(1.1); 
+            fill: var(--fitness-green); 
+            filter: drop-shadow(0 0 12px rgba(164, 255, 0, 0.6)); /* Neon Glow */
+        } 
+        
+        /* Removed Active Indicator Dot */
+
+        .nav-label { 
+            font-size: 10px; 
+            font-weight: 600; 
+            letter-spacing: 0.3px; 
+            opacity: 0.8;
+        }
+        .nav-item.active .nav-label {
+            opacity: 1;
+            font-weight: 700;
+        }
 
         /* CELEBRATION MODAL */
         .award-modal {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px);
             z-index: 3000;
             display: none;
             justify-content: center;
@@ -490,19 +592,20 @@
         }
         .award-modal.active { display: flex; }
         .award-content {
-            background: #1c1c1e;
+            background: rgba(28, 28, 30, 0.85);
+            backdrop-filter: blur(30px);
             padding: 40px 30px;
             border-radius: 30px;
             text-align: center;
             border: 1px solid rgba(164, 255, 0, 0.3);
-            box-shadow: 0 0 50px rgba(164, 255, 0, 0.2);
+            box-shadow: 0 0 50px rgba(164, 255, 0, 0.15);
             transform: scale(0.9);
             animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             max-width: 90%;
         }
         @keyframes popIn { to { transform: scale(1); } }
         
-        .award-icon { font-size: 80px; margin-bottom: 10px; display: block; animation: bounce 1.5s infinite; }
+        .award-icon { font-size: 80px; margin-bottom: 10px; display: block; animation: bounce 1.5s infinite; filter: drop-shadow(0 0 10px rgba(164,255,0,0.4)); }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         
         .award-content h2 { color: #a4ff00; font-size: 2rem; margin: 0 0 10px 0; font-weight: 800; letter-spacing: -1px; }
@@ -517,15 +620,16 @@
         /* iOS INSTALL PROMPT */
         .ios-prompt {
             display: none; position: fixed; bottom: 100px; left: 20px; right: 20px;
-            background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(10px);
+            background: rgba(28, 28, 30, 0.85); backdrop-filter: blur(20px);
             padding: 20px; border-radius: 20px; border: 1px solid var(--divider);
             z-index: 2000; animation: slideUp 0.5s ease-out;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .save-status {
             position: fixed; top: 20px; right: 20px;
-            background: rgba(46, 125, 50, 0.9); color: white;
+            background: rgba(46, 125, 50, 0.8); backdrop-filter: blur(10px); color: white;
             padding: 8px 16px; border-radius: 20px; font-size: 0.8rem;
             font-weight: bold; opacity: 0; transition: opacity 0.5s; pointer-events: none; z-index: 2000;
         }
@@ -545,19 +649,19 @@
         </header>
 
         <div class="summary-grid">
-            <div class="stat-card">
+            <div class="stat-card glass-panel">
                 <span class="stat-value" style="color: var(--fitness-cyan)">16:8</span>
                 <span class="stat-label">Fasting</span>
             </div>
-            <div class="stat-card">
+            <div class="stat-card glass-panel">
                 <span class="stat-value" style="color: var(--fitness-red)">1200</span>
                 <span class="stat-label">Calories</span>
             </div>
-            <div class="stat-card">
+            <div class="stat-card glass-panel">
                 <span class="stat-value" style="color: var(--fitness-green)">Millets</span>
                 <span class="stat-label">Carbs</span>
             </div>
-            <div class="stat-card">
+            <div class="stat-card glass-panel">
                 <span class="stat-value" style="color: var(--fitness-orange)">Whole</span>
                 <span class="stat-label">Food Only</span>
             </div>
@@ -565,12 +669,12 @@
 
         <h3 class="section-title">Nutrition Insights</h3>
         <div class="protocol-grid">
-            <div class="info-card">
+            <div class="info-card glass-panel">
                 <h4>🌾 Why Millets?</h4>
                 <p><strong>Low GI:</strong> Prevents insulin spikes, forcing fat burn.</p>
                 <p><strong>Satiety:</strong> Keeps you full for 4-5 hours.</p>
             </div>
-            <div class="info-card">
+            <div class="info-card glass-panel">
                 <h4>📊 Nutrient Density</h4>
                 <p><strong>Ragi:</strong> Calcium.</p>
                 <p><strong>Bajra:</strong> Iron.</p>
@@ -581,7 +685,7 @@
         <h3 class="section-title">Weekly Schedule</h3>
         <div class="days-container">
             <!-- Sunday -->
-            <div class="day-card" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Sunday</span>
                     <div class="day-stats">
@@ -607,7 +711,7 @@
             </div>
 
             <!-- Monday -->
-            <div class="day-card" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Monday</span>
                     <div class="day-stats">
@@ -633,7 +737,7 @@
             </div>
 
              <!-- Tuesday -->
-            <div class="day-card" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Tuesday</span>
                     <div class="day-stats">
@@ -659,7 +763,7 @@
             </div>
 
             <!-- Wednesday -->
-            <div class="day-card" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Wednesday</span>
                     <div class="day-stats">
@@ -685,7 +789,7 @@
             </div>
 
             <!-- Thursday -->
-            <div class="day-card" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Thursday</span>
                     <div class="day-stats">
@@ -711,7 +815,7 @@
             </div>
 
             <!-- Friday -->
-            <div class="day-card" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Friday</span>
                     <div class="day-stats">
@@ -737,7 +841,7 @@
             </div>
 
             <!-- Saturday -->
-            <div class="day-card" onclick="openDayModal(this)">
+            <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Saturday</span>
                     <div class="day-stats">
@@ -764,7 +868,7 @@
         </div>
 
         <h3 class="section-title">Guidelines</h3>
-        <div class="info-card" style="border: 1px solid rgba(250, 17, 79, 0.3); background: rgba(250, 17, 79, 0.1);">
+        <div class="info-card glass-panel" style="border: 1px solid rgba(250, 17, 79, 0.3); background: rgba(250, 17, 79, 0.1);">
             <strong>⚠️ 1200 kcal Warning</strong>
             <p>This is a low-calorie intake. If dizzy, add a fruit. Eat unlimited cucumbers.</p>
         </div>
@@ -777,7 +881,7 @@
             <h2>Brisk Walking</h2>
         </header>
 
-        <div class="walking-tool-card">
+        <div class="walking-tool-card glass-panel">
             <!-- Progress Ring -->
             <div class="ring-container">
                 <svg class="progress-ring" width="260" height="260">
@@ -812,7 +916,7 @@
         </div>
 
         <h3 class="section-title">Technique</h3>
-        <div class="info-card">
+        <div class="info-card glass-panel">
             <ul class="technique-list">
                 <li><strong>Posture:</strong> Tall spine, eyes forward.</li>
                 <li><strong>Arms:</strong> Bent 90°, swing from shoulders.</li>
@@ -822,7 +926,7 @@
         </div>
 
         <h3 class="section-title">Activity Calendar</h3>
-        <div class="calendar-card">
+        <div class="calendar-card glass-panel">
             <div class="calendar-header">
                 <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
                 <span id="cal-month-year"></span>
@@ -844,7 +948,7 @@
             <h2>Weight Log</h2>
         </header>
 
-        <div class="date-range-container">
+        <div class="date-range-container glass-panel">
             <div class="date-input-group">
                 <label>Start Date</label>
                 <input type="date" id="tracker-start" class="date-input">
@@ -858,18 +962,18 @@
             </button>
         </div>
 
-        <div class="chart-wrapper">
+        <div class="chart-wrapper glass-panel">
             <canvas id="weightChart"></canvas>
         </div>
 
-        <div id="tracker-container" class="tracker-grid">
+        <div id="tracker-container" class="tracker-grid glass-panel">
             <!-- JS Populated -->
         </div>
     </div>
 
 </div>
 
-<!-- BOTTOM NAVIGATION -->
+<!-- BOTTOM NAVIGATION (Floating Glass Pill) -->
 <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('diet', this)">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -901,14 +1005,19 @@
     </div>
 </div>
 
-<!-- FULL SCREEN DAY MODAL -->
+<!-- FULL SCREEN DAY MODAL (UPDATED TO SHEET) -->
 <div id="day-modal" class="day-modal">
-    <div class="modal-header-bar">
-        <div id="modal-day-title" class="modal-day-title">Monday</div>
-        <button class="modal-close-btn" onclick="closeDayModal()">✕</button>
-    </div>
-    <div id="modal-body-content" class="modal-body-content">
-        <!-- Content Injected Here -->
+    <div class="modal-sheet">
+        <div class="modal-handle-container">
+            <div class="modal-handle"></div>
+        </div>
+        <div class="modal-header-bar">
+            <div id="modal-day-title" class="modal-day-title">Monday</div>
+            <button class="modal-close-btn" onclick="closeDayModal()">✕</button>
+        </div>
+        <div id="modal-body-content" class="modal-body-content">
+            <!-- Content Injected Here -->
+        </div>
     </div>
 </div>
 
