@@ -7,9 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Diet Plan">
     <title>Diet Plan</title>
-    <!-- Add Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Add Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -156,6 +154,21 @@
             flex-direction: column;
             justify-content: space-between;
             min-height: 100px;
+            /* Added position relative for the arrow */
+            position: relative;
+        }
+        
+        /* Arrow for Stat Card */
+        .stat-card::before {
+            content: '›';
+            position: absolute;
+            top: 15px;
+            right: 18px;
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            line-height: 1;
+            pointer-events: none;
         }
 
         .stat-value { font-size: 1.7rem; font-weight: 700; font-family: "SF Pro Rounded", system-ui, sans-serif; letter-spacing: 0.5px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); }
@@ -170,8 +183,19 @@
             color: var(--text-primary);
             display: flex;
             align-items: center;
+            justify-content: space-between; /* Push arrow to right */
             padding-left: 10px;
+            padding-right: 15px;
             letter-spacing: 0.3px;
+        }
+        
+        /* Arrow for Section Titles */
+        .section-title::after {
+            content: '›';
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+            line-height: 1;
         }
 
         /* INFO CARDS */
@@ -185,7 +209,13 @@
 
         /* MEAL PLAN */
         .days-container { display: grid; gap: 14px; padding: 0 5px; }
-        .day-card { padding: 20px; cursor: pointer; transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .day-card { 
+            padding: 20px; 
+            cursor: pointer; 
+            transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            /* Added Padding right to prevent text overlap with arrow */
+            padding-right: 40px;
+        }
         .day-card:active { transform: scale(0.96); background: rgba(50, 50, 55, 0.7); }
         
         .day-card::after {
@@ -195,7 +225,7 @@
             top: 50%;
             transform: translateY(-50%);
             font-size: 1.4rem;
-            color: rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.3); /* Slightly brighter arrow */
             font-weight: 600;
             line-height: 1;
         }
@@ -203,7 +233,8 @@
         .day-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--divider);
-            padding-right: 25px; 
+            /* Reduced header padding since card has it now */
+            padding-right: 0; 
         }
         .day-name { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
         
@@ -383,7 +414,13 @@
         }
 
         /* 3. TACTILE GEL BUTTONS */
-        .controls { display: flex; align-items: center; gap: 40px; margin-bottom: 20px; z-index: 10; }
+        .controls { 
+            display: flex; 
+            align-items: center; 
+            gap: 25px; /* UPDATED: Tightened gap for 3 buttons */
+            margin-bottom: 20px; 
+            z-index: 10; 
+        }
         
         .btn-round {
             width: 80px; height: 80px; border-radius: 50%; border: none;
@@ -421,6 +458,15 @@
         .reset-btn { 
             background: rgba(255,255,255,0.1); 
             color: var(--text-primary); 
+            width: 50px; height: 50px; font-size: 1.2rem; 
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* New Edit Button Style */
+        .edit-btn {
+            background: rgba(255,255,255,0.1); 
+            color: var(--fitness-cyan); 
             width: 50px; height: 50px; font-size: 1.2rem; 
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -738,7 +784,6 @@
 
 <div class="app-content">
 
-    <!-- VIEW: DIET PLAN -->
     <div id="view-diet" class="view-section active">
         <header>
             <h1>Diet Plan</h1>
@@ -781,7 +826,6 @@
 
         <h3 class="section-title">Weekly Schedule</h3>
         <div class="days-container">
-            <!-- Sunday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Sunday</span>
@@ -807,7 +851,6 @@
                 </div>
             </div>
 
-            <!-- Monday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Monday</span>
@@ -833,8 +876,7 @@
                 </div>
             </div>
 
-             <!-- Tuesday -->
-            <div class="day-card glass-panel" onclick="openDayModal(this)">
+             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Tuesday</span>
                     <div class="day-stats">
@@ -859,7 +901,6 @@
                 </div>
             </div>
 
-            <!-- Wednesday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Wednesday</span>
@@ -885,7 +926,6 @@
                 </div>
             </div>
 
-            <!-- Thursday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Thursday</span>
@@ -911,7 +951,6 @@
                 </div>
             </div>
 
-            <!-- Friday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Friday</span>
@@ -937,7 +976,6 @@
                 </div>
             </div>
 
-            <!-- Saturday -->
             <div class="day-card glass-panel" onclick="openDayModal(this)">
                 <div class="day-header">
                     <span class="day-name">Saturday</span>
@@ -971,7 +1009,6 @@
         </div>
     </div>
 
-    <!-- VIEW: WORKOUT (TIMER) -->
     <div id="view-workout" class="view-section">
         <header>
             <h1>Workout</h1>
@@ -979,7 +1016,6 @@
         </header>
 
         <div class="walking-tool-card glass-panel">
-            <!-- Progress Ring -->
             <div class="ring-container">
                 <svg class="progress-ring" width="260" height="260">
                     <circle class="progress-ring__circle-bg" stroke="#1c1c1e" stroke-width="18" fill="transparent" r="110" cx="130" cy="130"/>
@@ -995,6 +1031,11 @@
                 <button class="btn-round reset-btn" onclick="resetWalk()">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
                 </button>
+                
+                <button class="btn-round edit-btn" onclick="manualSetTimer()">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </button>
+
                 <button class="btn-round start-btn" id="toggle-btn" onclick="toggleTimer()">
                     <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 </button>
@@ -1033,12 +1074,10 @@
                 <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
             </div>
             <div class="calendar-grid" id="activity-grid">
-                <!-- Grid items generated by JS -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- VIEW: TRACKER (WEIGHT) -->
     <div id="view-tracker" class="view-section">
         <header>
             <h1>Progress</h1>
@@ -1064,13 +1103,11 @@
         </div>
 
         <div id="tracker-container" class="tracker-grid glass-panel">
-            <!-- JS Populated -->
-        </div>
+            </div>
     </div>
 
 </div>
 
-<!-- BOTTOM NAVIGATION (Floating Glass Pill) -->
 <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('diet', this)">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -1092,7 +1129,6 @@
     </div>
 </nav>
 
-<!-- CELEBRATION MODAL -->
 <div id="award-modal" class="award-modal">
     <div class="award-content">
         <div class="award-icon">🏆</div>
@@ -1102,7 +1138,6 @@
     </div>
 </div>
 
-<!-- FULL SCREEN DAY MODAL (UPDATED TO SHEET) -->
 <div id="day-modal" class="day-modal">
     <div class="modal-sheet">
         <div class="modal-handle-container">
@@ -1113,12 +1148,10 @@
             <button class="modal-close-btn" onclick="closeDayModal()">✕</button>
         </div>
         <div id="modal-body-content" class="modal-body-content">
-            <!-- Content Injected Here -->
-        </div>
+            </div>
     </div>
 </div>
 
-<!-- UTILS -->
 <div id="ios-install-prompt" class="ios-prompt">
     <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
         <strong>Install App</strong>
@@ -1148,6 +1181,7 @@
         document.getElementById('modal-day-title').innerText = dayName;
         
         let contentHtml = '';
+        
         mealRows.forEach(row => {
             const title = row.querySelector('.meal-title').innerText;
             const content = row.querySelector('.meal-content').innerHTML;
@@ -1235,10 +1269,10 @@
     });
 
     // --- TIMER LOGIC (COUNTDOWN + RING + ALARM) ---
+    // REPLACED WAKE LOCK WITH BACKGROUND AUDIO SESSION
     const GOAL_MINUTES = 45;
     const GOAL_MS = GOAL_MINUTES * 60 * 1000;
-    const ALARM_INTERVAL_MS = 5 * 60 * 1000; // 5 mins
-
+    
     // Keys
     const KEY_TARGET_END = 'walkTargetEnd';     // When the timer is scheduled to finish (timestamp)
     const KEY_REMAINING = 'walkRemaining';      // Saved remaining ms when paused
@@ -1249,7 +1283,6 @@
     // Init Calendar View Date (Must be defined before usage)
     let calendarViewDate = new Date();
 
-    let timerInterval;
     const timerDisplay = document.getElementById('walk-timer');
     const toggleBtn = document.getElementById('toggle-btn');
     const calsDisplay = document.getElementById('est-cals');
@@ -1261,46 +1294,95 @@
     ringCircle.style.strokeDasharray = `${circumference} ${circumference}`;
     ringCircle.style.strokeDashoffset = circumference; 
 
-    function setProgress(percent) {
-        const offset = circumference - (percent / 100) * circumference;
-        ringCircle.style.strokeDashoffset = offset;
+    // --- WEB WORKER FOR BACKGROUND TIMING ---
+    // We use a Blob to create a worker inline without a separate file
+    const workerBlob = new Blob([`
+        let timerInterval;
+        self.onmessage = function(e) {
+            if (e.data === 'start') {
+                timerInterval = setInterval(() => {
+                    self.postMessage('tick');
+                }, 1000);
+            } else if (e.data === 'stop') {
+                clearInterval(timerInterval);
+            }
+        };
+    `], { type: 'application/javascript' });
+    
+    const timerWorker = new Worker(URL.createObjectURL(workerBlob));
+    
+    timerWorker.onmessage = function(e) {
+        if (e.data === 'tick') {
+            updateTimerLoop();
+        }
+    };
+
+    // --- AUDIO SYSTEM (Silent Loop for Background Persistence) ---
+    let audioCtx;
+    let silentSource = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
     }
 
-    // Audio Engine - GLOBAL CONTEXT FOR IOS
-    let audioCtx; // Persistent audio context
+    function startSilentLoop() {
+        initAudio();
+        // Stop existing if any
+        if (silentSource) { try { silentSource.stop(); } catch(e){} }
+        
+        // Create a silent buffer (1 second)
+        const buffer = audioCtx.createBuffer(1, 44100, 44100);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < 44100; i++) data[i] = 0; // Fill with silence
 
+        silentSource = audioCtx.createBufferSource();
+        silentSource.buffer = buffer;
+        silentSource.loop = true; // Loop indefinitely
+        silentSource.connect(audioCtx.destination);
+        silentSource.start();
+    }
+
+    function stopSilentLoop() {
+        if (silentSource) {
+            try { silentSource.stop(); } catch(e){}
+            silentSource = null;
+        }
+    }
+
+    // --- PLAY ALARM SOUND ---
     function playBeep() {
-        // Safe check
-        if (!audioCtx) return;
-
+        initAudio(); // Ensure context is ready
         const t = audioCtx.currentTime;
         
-        // Helper function to create a single tone
         function playTone(freq, startTime, duration) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            
             osc.frequency.value = freq;
-            osc.type = 'sine'; // Smooth sine wave
-            
-            // Volume Envelope (Fade in/out to prevent clicking)
+            osc.type = 'sine';
             gain.gain.setValueAtTime(0, startTime);
-            gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05); // Attack
-            gain.gain.setValueAtTime(0.2, startTime + duration - 0.05); // Sustain
-            gain.gain.linearRampToValueAtTime(0, startTime + duration); // Release
-            
+            gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+            gain.gain.setValueAtTime(0.2, startTime + duration - 0.05);
+            gain.gain.linearRampToValueAtTime(0, startTime + duration);
             osc.start(startTime);
             osc.stop(startTime + duration);
         }
 
-        // 3+ Second Alarm Sequence: Beep... Beep... Beep... BEEEEEP!
-        playTone(880, t, 0.6);        // Tone 1 (0.0s - 0.6s)
-        playTone(880, t + 0.8, 0.6);  // Tone 2 (0.8s - 1.4s)
-        playTone(880, t + 1.6, 0.6);  // Tone 3 (1.6s - 2.2s)
-        playTone(1760, t + 2.4, 1.0); // Final High Tone (2.4s - 3.4s)
+        // 3-tone Alarm
+        playTone(880, t, 0.6);
+        playTone(880, t + 0.8, 0.6);
+        playTone(1760, t + 1.6, 1.0);
+    }
+
+    function setProgress(percent) {
+        const offset = circumference - (percent / 100) * circumference;
+        ringCircle.style.strokeDashoffset = offset;
     }
 
     // CELEBRATION LOGIC
@@ -1339,35 +1421,14 @@
         document.getElementById('award-modal').classList.remove('active');
     }
 
-    initTimer();
-
-    function initTimer() {
-        const isRunning = localStorage.getItem(KEY_IS_RUNNING) === 'true';
-        if (isRunning) {
-            setBtnStop();
-            timerInterval = setInterval(updateTimerLoop, 1000);
-        } else {
-            setBtnStart();
-        }
-        updateTimerVisuals(); // Immediate render
-        renderCalendar(); // New Calendar Function
-    }
-
     function toggleTimer() {
         const isRunning = localStorage.getItem(KEY_IS_RUNNING) === 'true';
         
-        // Initialize Audio Context on user gesture (ESSENTIAL FOR iOS)
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        // Always try to resume context on user interaction
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-
         if (isRunning) {
             // PAUSE
-            clearInterval(timerInterval);
+            timerWorker.postMessage('stop');
+            stopSilentLoop(); // Stop background task
+            
             const targetEnd = parseInt(localStorage.getItem(KEY_TARGET_END) || 0);
             const remaining = Math.max(0, targetEnd - Date.now());
             
@@ -1375,19 +1436,23 @@
             localStorage.setItem(KEY_IS_RUNNING, 'false');
             localStorage.removeItem(KEY_TARGET_END);
             
-            logDailyActivity(remaining); // Save progress
+            logDailyActivity(remaining); 
             setBtnStart();
             updateTimerVisuals();
         } else {
             // START
+            // 1. Initialize Audio Context (User Gesture)
+            startSilentLoop(); 
+            
+            // 2. Start Worker
+            timerWorker.postMessage('start');
+
             const currentRemaining = parseInt(localStorage.getItem(KEY_REMAINING));
-            // Default to goal if not set or finished
             const duration = (!isNaN(currentRemaining) && currentRemaining > 0) ? currentRemaining : GOAL_MS;
             
             localStorage.setItem(KEY_TARGET_END, Date.now() + duration);
             localStorage.setItem(KEY_IS_RUNNING, 'true');
             
-            timerInterval = setInterval(updateTimerLoop, 1000);
             setBtnStop();
         }
     }
@@ -1398,20 +1463,22 @@
 
         if (remaining <= 0) {
             // Finished
-            clearInterval(timerInterval);
+            timerWorker.postMessage('stop');
+            stopSilentLoop();
+            
             localStorage.setItem(KEY_IS_RUNNING, 'false');
             localStorage.setItem(KEY_REMAINING, 0);
             localStorage.removeItem(KEY_TARGET_END);
             
-            logDailyActivity(0); // Log complete (0 remaining)
-            showAward(); // TRIGGER CELEBRATION
+            logDailyActivity(0); 
+            showAward(); 
             
             setBtnStart();
             updateTimerVisuals();
             return;
         }
 
-        // Alarm Logic (Every 5 mins i.e., when passed 40, 35, 30...)
+        // Alarm Logic
         const elapsedMinutes = (GOAL_MS - remaining) / 1000 / 60;
         const currentBlock = Math.floor(elapsedMinutes / 5); 
         const lastBlock = parseInt(localStorage.getItem(KEY_LAST_BEEP) || 0);
@@ -1423,7 +1490,6 @@
 
         updateTimerVisuals(remaining);
         
-        // Auto-save progress every minute (optional but good for crash recovery)
         if (Math.floor(Date.now() / 1000) % 60 === 0) {
              logDailyActivity(remaining);
         }
@@ -1478,15 +1544,44 @@
     }
 
     function resetWalk() {
-        clearInterval(timerInterval);
+        timerWorker.postMessage('stop');
+        stopSilentLoop();
+        
         localStorage.removeItem(KEY_TARGET_END);
         localStorage.removeItem(KEY_IS_RUNNING);
         localStorage.removeItem(KEY_LAST_BEEP);
-        localStorage.setItem(KEY_REMAINING, GOAL_MS); // Reset to full 45
+        localStorage.setItem(KEY_REMAINING, GOAL_MS); 
         
         setBtnStart();
         updateTimerVisuals();
         setProgress(0);
+    }
+
+    // --- MANUAL TIMER SET ---
+    function manualSetTimer() {
+        // 1. Pause if running
+        if (localStorage.getItem(KEY_IS_RUNNING) === 'true') {
+            toggleTimer(); 
+        }
+
+        // 2. Prompt user
+        const input = prompt("Set Timer (Minutes)\nEnter 0.1 for sound test (6 seconds):", "45");
+        
+        if (input !== null && input !== "") {
+            const mins = parseFloat(input);
+            if (!isNaN(mins) && mins > 0) {
+                // 3. Convert to MS and Save
+                const newMs = Math.floor(mins * 60 * 1000);
+                localStorage.setItem(KEY_REMAINING, newMs);
+                
+                // 4. Update Visuals
+                updateTimerVisuals(newMs);
+                
+                // 5. Update Ring Progress
+                const percent = ((GOAL_MS - newMs) / GOAL_MS) * 100;
+                setProgress(percent);
+            }
+        }
     }
 
     // --- ACTIVITY CALENDAR RENDERER ---
@@ -1843,14 +1938,33 @@
         setTimeout(() => saveStatus.classList.remove('visible'), 2000);
     }
 
-    // Initial render
-    initChart();
-    renderTracker();
-
-    // iOS check
-    if (/iPhone|iPad/.test(navigator.userAgent) && !window.navigator.standalone) {
-        setTimeout(() => document.getElementById('ios-install-prompt').style.display = 'block', 2000);
+    // Initial Timer Setup
+    function initTimer() {
+        const isRunning = localStorage.getItem(KEY_IS_RUNNING) === 'true';
+        if (isRunning) {
+            setBtnStop();
+            // Resume worker and audio on reload
+            timerWorker.postMessage('start');
+            startSilentLoop(); 
+        } else {
+            setBtnStart();
+        }
+        updateTimerVisuals(); // Immediate render
+        renderCalendar(); // New Calendar Function
     }
+
+    // --- APPLICATION START ---
+    document.addEventListener('DOMContentLoaded', () => {
+        initTimer();
+        initChart();
+        renderTracker();
+
+        // iOS check
+        if (/iPhone|iPad/.test(navigator.userAgent) && !window.navigator.standalone) {
+            setTimeout(() => document.getElementById('ios-install-prompt').style.display = 'block', 2000);
+        }
+    });
+
 </script>
 
 </body>
