@@ -417,13 +417,14 @@
         .controls { 
             display: flex; 
             align-items: center; 
-            gap: 25px; /* UPDATED: Tightened gap for 3 buttons */
+            gap: 20px; /* Reduced gap to fit 4 buttons */
             margin-bottom: 20px; 
             z-index: 10; 
         }
         
         .btn-round {
-            width: 80px; height: 80px; border-radius: 50%; border: none;
+            width: 70px; height: 70px; /* Slightly smaller for 4 buttons */
+            border-radius: 50%; border: none;
             font-size: 1.8rem; display: flex; justify-content: center; align-items: center;
             cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
@@ -440,6 +441,7 @@
         }
 
         .start-btn { 
+            width: 80px; height: 80px; /* Main button stays big */
             background: linear-gradient(145deg, #a4ff00, #7abb00); 
             color: #000; 
             box-shadow: 
@@ -448,6 +450,7 @@
         }
         
         .stop-btn { 
+            width: 80px; height: 80px;
             background: linear-gradient(145deg, #fa114f, #d00033); 
             color: #fff; 
             box-shadow: 
@@ -463,10 +466,17 @@
             backdrop-filter: blur(10px);
         }
         
-        /* New Edit Button Style */
         .edit-btn {
             background: rgba(255,255,255,0.1); 
             color: var(--fitness-cyan); 
+            width: 50px; height: 50px; font-size: 1.2rem; 
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .notify-btn {
+            background: rgba(255,255,255,0.1); 
+            color: var(--fitness-orange); 
             width: 50px; height: 50px; font-size: 1.2rem; 
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -1032,6 +1042,10 @@
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
                 </button>
                 
+                <button class="btn-round notify-btn" onclick="requestNotification()" title="Allow Notifications">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                </button>
+
                 <button class="btn-round edit-btn" onclick="manualSetTimer()">
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                 </button>
@@ -1111,7 +1125,7 @@
 <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('diet', this)">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+            <path d="M19 3h-1V1h-2v2H8V1H6v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
         </svg>
         <span class="nav-label">Plan</span>
     </div>
@@ -1294,6 +1308,69 @@
     ringCircle.style.strokeDasharray = `${circumference} ${circumference}`;
     ringCircle.style.strokeDashoffset = circumference; 
 
+    // --- WAKE LOCK API (KEEP SCREEN ON) ---
+    let wakeLock = null;
+
+    async function requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Wake Lock is active');
+                wakeLock.addEventListener('release', () => {
+                    console.log('Wake Lock was released');
+                });
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
+    }
+
+    function releaseWakeLock() {
+        if (wakeLock !== null) {
+            wakeLock.release();
+            wakeLock = null;
+        }
+    }
+
+    // Re-acquire wake lock on visibility change (required for iOS)
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            await requestWakeLock();
+        }
+    });
+
+    // --- NOTIFICATION API ---
+    function requestNotification() {
+        if (!("Notification" in window)) {
+            alert("This browser does not support desktop notification");
+        } else if (Notification.permission === "granted") {
+            alert("Notifications already enabled!");
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(function (permission) {
+                if (permission === "granted") {
+                    alert("Notifications enabled!");
+                }
+            });
+        }
+    }
+
+    function triggerNotification() {
+        if (Notification.permission === "granted") {
+            try {
+                // For Mobile Safari, this works best if app is installed to Home Screen
+                new Notification("Goal Crushed!", {
+                    body: "You completed 45 minutes of brisk walking.",
+                    icon: "https://cdn-icons-png.flaticon.com/512/2583/2583290.png" 
+                });
+                
+                // Fallback Vibration
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            } catch(e) {
+                console.log("Notification failed", e);
+            }
+        }
+    }
+
     // --- WEB WORKER FOR BACKGROUND TIMING ---
     // We use a Blob to create a worker inline without a separate file
     const workerBlob = new Blob([`
@@ -1357,6 +1434,8 @@
     // --- PLAY ALARM SOUND ---
     function playBeep() {
         initAudio(); // Ensure context is ready
+        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
         const t = audioCtx.currentTime;
         
         function playTone(freq, startTime, duration) {
@@ -1400,6 +1479,8 @@
 
         // Play Victory Sound (Major Arpeggio)
         if(audioCtx) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
             const t = audioCtx.currentTime;
             const playNote = (f, s) => {
                 const osc = audioCtx.createOscillator();
@@ -1427,7 +1508,8 @@
         if (isRunning) {
             // PAUSE
             timerWorker.postMessage('stop');
-            stopSilentLoop(); // Stop background task
+            stopSilentLoop(); 
+            releaseWakeLock(); // Release screen lock
             
             const targetEnd = parseInt(localStorage.getItem(KEY_TARGET_END) || 0);
             const remaining = Math.max(0, targetEnd - Date.now());
@@ -1443,6 +1525,7 @@
             // START
             // 1. Initialize Audio Context (User Gesture)
             startSilentLoop(); 
+            requestWakeLock(); // Request screen to stay on
             
             // 2. Start Worker
             timerWorker.postMessage('start');
@@ -1465,6 +1548,8 @@
             // Finished
             timerWorker.postMessage('stop');
             stopSilentLoop();
+            releaseWakeLock();
+            triggerNotification(); // Trigger system notification
             
             localStorage.setItem(KEY_IS_RUNNING, 'false');
             localStorage.setItem(KEY_REMAINING, 0);
@@ -1476,6 +1561,11 @@
             setBtnStart();
             updateTimerVisuals();
             return;
+        }
+
+        // Keep audio context alive on every tick
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
         }
 
         // Alarm Logic
@@ -1546,6 +1636,7 @@
     function resetWalk() {
         timerWorker.postMessage('stop');
         stopSilentLoop();
+        releaseWakeLock();
         
         localStorage.removeItem(KEY_TARGET_END);
         localStorage.removeItem(KEY_IS_RUNNING);
@@ -1946,6 +2037,8 @@
             // Resume worker and audio on reload
             timerWorker.postMessage('start');
             startSilentLoop(); 
+            // Attempt to recover lock if already running
+            requestWakeLock();
         } else {
             setBtnStart();
         }
