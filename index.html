@@ -417,13 +417,13 @@
         .controls { 
             display: flex; 
             align-items: center; 
-            gap: 20px; 
+            gap: 35px; /* Increased gap */
             margin-bottom: 20px; 
             z-index: 10; 
         }
         
         .btn-round {
-            width: 70px; height: 70px;
+            width: 80px; height: 80px;
             border-radius: 50%; border: none;
             font-size: 1.8rem; display: flex; justify-content: center; align-items: center;
             cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -461,14 +461,6 @@
         .reset-btn { 
             background: rgba(255,255,255,0.1); 
             color: var(--text-primary); 
-            width: 50px; height: 50px; font-size: 1.2rem; 
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .edit-btn {
-            background: rgba(255,255,255,0.1); 
-            color: var(--fitness-cyan); 
             width: 50px; height: 50px; font-size: 1.2rem; 
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
@@ -1046,10 +1038,6 @@
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
                 </button>
 
-                <button class="btn-round edit-btn" onclick="manualSetTimer()">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-                </button>
-
                 <button class="btn-round start-btn" id="toggle-btn" onclick="toggleTimer()">
                     <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 </button>
@@ -1410,6 +1398,12 @@
             const currentRemaining = parseInt(localStorage.getItem(KEY_REMAINING));
             const duration = (!isNaN(currentRemaining) && currentRemaining > 0) ? currentRemaining : GOAL_MS;
             
+            // 0 MINUTE NOTIFICATION CHECK (Fresh Start)
+            // If currentRemaining is very close to GOAL_MS, it's a fresh start
+            if (currentRemaining >= GOAL_MS - 1000 || isNaN(currentRemaining)) {
+                 triggerNotification("Start Walking", "Walk slow – easy pace, relax your body");
+            }
+
             localStorage.setItem(KEY_TARGET_END, Date.now() + duration);
             localStorage.setItem(KEY_IS_RUNNING, 'true');
             
@@ -1446,14 +1440,14 @@
         if (completedMinutes > 0 && completedMinutes % 5 === 0 && completedMinutes > lastNotified) {
              let msg = "";
              switch(completedMinutes) {
-                 case 5: msg = "Walk slow – easy pace, relax your body"; break;
-                 case 10: msg = "Walk fast – pick up the pace, stay strong"; break;
-                 case 15: msg = "Walk slow – recover, breathe steady"; break;
-                 case 20: msg = "Walk fast – brisk steps, swing your arms"; break;
-                 case 25: msg = "Walk slow – ease back, keep moving"; break;
-                 case 30: msg = "Walk fast – strong pace, you’re doing great"; break;
-                 case 35: msg = "Walk slow – controlled and relaxed"; break;
-                 case 40: msg = "Walk fast – final push, stay focused"; break;
+                 case 5: msg = "Walk fast – pick up the pace, stay strong"; break;
+                 case 10: msg = "Walk slow – recover, breathe steady"; break;
+                 case 15: msg = "Walk fast – brisk steps, swing your arms"; break;
+                 case 20: msg = "Walk slow – ease back, keep moving"; break;
+                 case 25: msg = "Walk fast – strong pace, you’re doing great"; break;
+                 case 30: msg = "Walk slow – controlled and relaxed"; break;
+                 case 35: msg = "Walk fast – final push, stay focused"; break;
+                 case 40: msg = "Walk slow – controlled and relaxed"; break;
              }
 
              if(msg) {
@@ -1523,33 +1517,6 @@
         setBtnStart();
         updateTimerVisuals();
         setProgress(0);
-    }
-
-    // --- MANUAL TIMER SET ---
-    function manualSetTimer() {
-        // 1. Pause if running
-        if (localStorage.getItem(KEY_IS_RUNNING) === 'true') {
-            toggleTimer(); 
-        }
-
-        // 2. Prompt user
-        const input = prompt("Set Timer (Minutes)\nEnter 0.1 for quick test (6 seconds):", "45");
-        
-        if (input !== null && input !== "") {
-            const mins = parseFloat(input);
-            if (!isNaN(mins) && mins > 0) {
-                // 3. Convert to MS and Save
-                const newMs = Math.floor(mins * 60 * 1000);
-                localStorage.setItem(KEY_REMAINING, newMs);
-                
-                // 4. Update Visuals
-                updateTimerVisuals(newMs);
-                
-                // 5. Update Ring Progress
-                const percent = ((GOAL_MS - newMs) / GOAL_MS) * 100;
-                setProgress(percent);
-            }
-        }
     }
 
     // --- ACTIVITY CALENDAR RENDERER ---
