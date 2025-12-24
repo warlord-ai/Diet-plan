@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Diet Plan">
+    <title>Diet Plan</title>
+    <style>
+        :root {
+            /* Apple Fitness Palette */
+            --bg-color: #000000;
+            --card-color: #1c1c1e;
+            --text-primary: #ffffff;
+            --text-secondary: #8e8e93;
+            --divider: #2c2c2e;
+            --nav-bg: rgba(28, 28, 30, 0.95);
+            
+            /* Neon Accents */
+            --fitness-red: #fa114f;    /* Calories/Move */
+            --fitness-green: #a4ff00;  /* Exercise/Protein */
+            --fitness-cyan: #00e0ff;   /* Stand/Fasting */
+            --fitness-orange: #ff9500; /* Warm accent */
+            
+            --radius-lg: 20px;
+            --radius-sm: 8px;
+            --bottom-nav-height: 85px;
+        }
+
+        /* GLOBAL RESET */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { overflow-x: hidden; background-color: var(--bg-color); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior-y: none;
+            overflow-x: hidden;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* SCROLLABLE CONTENT AREA */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-top: max(20px, env(safe-area-inset-top));
+            /* Add padding for bottom nav */
+            padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* TAB VIEWS */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .view-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* HEADER */
+        header { padding: 10px 0 20px 0; text-align: left; }
+        h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; }
+        h2 { margin-top: 5px; font-weight: 500; font-size: 1rem; color: var(--fitness-red); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* SUMMARY GRID */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .stat-card {
+            background-color: var(--card-color);
+            border-radius: var(--radius-lg);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 90px;
+        }
+
+        .stat-value { font-size: 1.5rem; font-weight: 700; font-family: "SF Pro Rounded", system-ui, sans-serif; }
+        .stat-label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px; }
+
+        /* SECTION TITLES */
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            margin-top: 25px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+        }
+        .section-title::before {
+            content: ''; display: inline-block; width: 4px; height: 20px;
+            background: var(--fitness-green); margin-right: 10px; border-radius: 2px;
+        }
+
+        /* INFO CARDS */
+        .protocol-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 600px) { .protocol-grid { grid-template-columns: 1fr 1fr; } }
+
+        .info-card {
+            background-color: var(--card-color);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+        }
+        .info-card h4 { margin: 0 0 8px 0; color: var(--fitness-cyan); font-size: 1rem; }
+        .info-card p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4; }
+        .info-card strong { color: var(--text-primary); }
+
+        /* MEAL PLAN */
+        .days-container { display: grid; gap: 15px; }
+        .day-card { background-color: var(--card-color); border-radius: var(--radius-lg); padding: 18px; }
+        .day-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid var(--divider);
+        }
+        .day-name { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+        
+        /* Stats row in header */
+        .day-stats { display: flex; gap: 10px; }
+        .stat-badge { font-size: 0.8rem; font-weight: 600; padding: 2px 6px; border-radius: 6px; }
+        .stat-cals { color: var(--fitness-red); border: 1px solid rgba(250, 17, 79, 0.3); }
+        .stat-prot { color: var(--fitness-green); border: 1px solid rgba(164, 255, 0, 0.3); }
+        
+        .meal-row { margin-bottom: 15px; padding-left: 12px; border-left: 2px solid var(--divider); }
+        .meal-row:last-child { margin-bottom: 0; }
+        .meal-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 3px; font-weight: 600; }
+        .meal-content { font-size: 0.95rem; color: var(--text-primary); margin-bottom: 5px; }
+
+        /* BADGES */
+        .badges-wrapper { display: flex; gap: 6px; flex-wrap: wrap; }
+        .badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+        .badge-protein { color: #000; background-color: var(--fitness-green); }
+        .badge-millet { color: #000; background-color: var(--fitness-orange); }
+        .badge-info { color: var(--fitness-cyan); background-color: rgba(0, 224, 255, 0.15); }
+        .badge-cal { color: var(--fitness-red); border: 1px solid rgba(250, 17, 79, 0.3); background: transparent; }
+
+        /* WALKING TOOL */
+        .walking-tool-card {
+            background-color: var(--card-color);
+            padding: 30px 20px;
+            border-radius: var(--radius-lg);
+            display: flex; flex-direction: column; align-items: center;
+            margin-top: 10px;
+        }
+        .timer-display {
+            font-size: clamp(3.5rem, 15vw, 5rem);
+            font-weight: 800; color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 25px;
+            text-shadow: 0 0 30px rgba(164, 255, 0, 0.1);
+            line-height: 1;
+        }
+        .controls { display: flex; align-items: center; gap: 40px; margin-bottom: 30px; }
+        .btn-round {
+            width: 75px; height: 75px; border-radius: 50%; border: none;
+            font-size: 1.6rem; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: transform 0.1s;
+        }
+        .btn-round:active { transform: scale(0.95); }
+        .start-btn { background-color: rgba(164, 255, 0, 0.15); color: var(--fitness-green); }
+        .stop-btn { background-color: rgba(250, 17, 79, 0.15); color: var(--fitness-red); }
+        .lap-btn { background-color: #3a3a3c; color: var(--text-primary); }
+        
+        .lap-display { display: flex; flex-direction: column; align-items: center; }
+        .lap-display .label { font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 1px; font-weight: 600; }
+        .lap-display .count { font-size: 2.5rem; font-weight: 700; color: var(--fitness-cyan); }
+
+        .technique-list li {
+            margin-bottom: 12px; padding-left: 20px; position: relative;
+            color: var(--text-secondary); font-size: 0.95rem;
+        }
+        .technique-list li::before { content: '✓'; color: var(--fitness-green); position: absolute; left: 0; font-weight: bold; }
+
+        /* TRACKER GRID */
+        .tracker-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px; background-color: var(--card-color);
+            padding: 15px; border-radius: var(--radius-lg);
+        }
+        .tracker-cell {
+            background-color: #2c2c2e; border-radius: 10px; padding: 10px 5px;
+            text-align: center; display: flex; flex-direction: column; align-items: center;
+        }
+        .tracker-date { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 5px; font-weight: 600; }
+        .tracker-input {
+            width: 100%; background: transparent; border: none; color: var(--text-primary);
+            font-size: 1.2rem; font-weight: 700; text-align: center; margin-bottom: 2px;
+        }
+        .tracker-input:focus { outline: none; background: #3a3a3c; border-radius: 4px; }
+        .diff-badge { font-size: 0.7rem; font-weight: 700; min-height: 1.2em; }
+        .diff-loss { color: var(--fitness-green); }
+        .diff-gain { color: var(--fitness-red); }
+
+        /* BOTTOM NAVIGATION */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 10px;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            font-weight: 500;
+            width: 33%;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .nav-icon {
+            width: 28px; height: 28px; margin-bottom: 4px;
+            fill: currentColor;
+        }
+
+        .nav-item.active { color: var(--fitness-green); }
+
+        /* iOS INSTALL PROMPT */
+        .ios-prompt {
+            display: none; position: fixed; bottom: 100px; left: 20px; right: 20px;
+            background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(10px);
+            padding: 20px; border-radius: 20px; border: 1px solid var(--divider);
+            z-index: 2000; animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .save-status {
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(46, 125, 50, 0.9); color: white;
+            padding: 8px 16px; border-radius: 20px; font-size: 0.8rem;
+            font-weight: bold; opacity: 0; transition: opacity 0.5s; pointer-events: none; z-index: 2000;
+        }
+        .save-status.visible { opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+<div class="app-content">
+
+    <!-- VIEW: DIET PLAN -->
+    <div id="view-diet" class="view-section active">
+        <header>
+            <h1>Diet Plan</h1>
+            <h2>30-Day Aggressive Cut</h2>
+        </header>
+
+        <div class="summary-grid">
+            <div class="stat-card">
+                <span class="stat-value" style="color: var(--fitness-cyan)">16:8</span>
+                <span class="stat-label">Fasting</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" style="color: var(--fitness-red)">1200</span>
+                <span class="stat-label">Calories</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" style="color: var(--fitness-green)">Millets</span>
+                <span class="stat-label">Carbs</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" style="color: var(--fitness-orange)">Whole</span>
+                <span class="stat-label">Food Only</span>
+            </div>
+        </div>
+
+        <h3 class="section-title">Nutrition Insights</h3>
+        <div class="protocol-grid">
+            <div class="info-card">
+                <h4>🌾 Why Millets?</h4>
+                <p><strong>Low GI:</strong> Prevents insulin spikes, forcing fat burn.</p>
+                <p><strong>Satiety:</strong> Keeps you full for 4-5 hours.</p>
+            </div>
+            <div class="info-card">
+                <h4>📊 Nutrient Density</h4>
+                <p><strong>Ragi:</strong> Calcium.</p>
+                <p><strong>Bajra:</strong> Iron.</p>
+                <p><strong>Jowar:</strong> Gut health.</p>
+            </div>
+        </div>
+
+        <h3 class="section-title">Weekly Schedule</h3>
+        <div class="days-container">
+            <!-- Sunday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-name">Sunday</span>
+                    <div class="day-stats">
+                        <span class="stat-badge stat-cals">1200 kcal</span>
+                        <span class="stat-badge stat-prot">65g Prot</span>
+                    </div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">12:00 PM - Break Fast</div>
+                    <div class="meal-content"><strong>2 Small Ragi Rotis</strong> + 120g Paneer Bhurji + 100g Cucumber.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~480 kcal</span><span class="badge badge-millet">Calcium</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">4:00 PM - Snack</div>
+                    <div class="meal-content"><strong>Spiced Soya Chunks</strong> (40g dry wt, boiled & sautéed).</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~180 kcal</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">7:30 PM - Dinner</div>
+                    <div class="meal-content"><strong>Grilled Tofu Salad</strong> (150g Tofu + 50g Veggies).</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~320 kcal</span></div>
+                </div>
+            </div>
+
+            <!-- Monday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-name">Monday</span>
+                    <div class="day-stats">
+                        <span class="stat-badge stat-cals">1180 kcal</span>
+                        <span class="stat-badge stat-prot">50g Prot</span>
+                    </div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">12:00 PM - Break Fast</div>
+                    <div class="meal-content"><strong>Foxtail Millet</strong> (100g Cooked) + 200g Rajma Masala + 100g Green Salad.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~400 kcal</span><span class="badge badge-millet">Low GI</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">4:00 PM - Snack</div>
+                    <div class="meal-content">150g Greek Yogurt + 10g Chia Seeds.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~140 kcal</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">7:30 PM - Dinner</div>
+                    <div class="meal-content">300ml Spinach Soup + <strong>120g Sautéed Paneer</strong>.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~370 kcal</span></div>
+                </div>
+            </div>
+
+             <!-- Tuesday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-name">Tuesday</span>
+                    <div class="day-stats">
+                        <span class="stat-badge stat-cals">1200 kcal</span>
+                        <span class="stat-badge stat-prot">70g Prot</span>
+                    </div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">12:00 PM - Break Fast</div>
+                    <div class="meal-content"><strong>2 Jowar Rotis</strong> + Soya Chunk Curry (50g dry wt).</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~400 kcal</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">4:00 PM - Snack</div>
+                    <div class="meal-content"><strong>Grilled Tofu Cubes</strong> (100g) with Lemon.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~140 kcal</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">7:30 PM - Dinner</div>
+                    <div class="meal-content"><strong>Warm Soya Salad</strong> (50g dry wt Soya + 100g Veggies).</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~250 kcal</span></div>
+                </div>
+            </div>
+
+            <!-- Wednesday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-name">Wednesday</span>
+                    <div class="day-stats">
+                        <span class="stat-badge stat-cals">1220 kcal</span>
+                        <span class="stat-badge stat-prot">55g Prot</span>
+                    </div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">12:00 PM - Break Fast</div>
+                    <div class="meal-content">2 Besan Chillas + <strong>80g Paneer Stuffing</strong>.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~440 kcal</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">4:00 PM - Snack</div>
+                    <div class="meal-content">100g Sprouted Moong Salad.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~120 kcal</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">7:30 PM - Dinner</div>
+                    <div class="meal-content">150g Stir-fry Veggies + <strong>150g Grilled Tofu</strong>.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~320 kcal</span></div>
+                </div>
+            </div>
+
+            <!-- Thursday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-name">Thursday</span>
+                    <div class="day-stats">
+                        <span class="stat-badge stat-cals">1200 kcal</span>
+                        <span class="stat-badge stat-prot">45g Prot</span>
+                    </div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">12:00 PM - Break Fast</div>
+                    <div class="meal-content"><strong>Barnyard Millet Khichdi</strong> (200g) + 100g Sautéed Spinach.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~350 kcal</span><span class="badge badge-millet">Fiber Rich</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">4:00 PM - Snack</div>
+                    <div class="meal-content"><strong>50g Roasted Black Chana</strong>.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~180 kcal</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">7:30 PM - Dinner</div>
+                    <div class="meal-content"><strong>Papaya (100g) & Cucumber (100g) Salad</strong> + 100g Paneer.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~320 kcal</span></div>
+                </div>
+            </div>
+
+            <!-- Friday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-name">Friday</span>
+                    <div class="day-stats">
+                        <span class="stat-badge stat-cals">1250 kcal</span>
+                        <span class="stat-badge stat-prot">45g Prot</span>
+                    </div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">12:00 PM - Break Fast</div>
+                    <div class="meal-content"><strong>2 Bajra Rotis</strong> + Palak Paneer (120g Paneer).</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~550 kcal</span><span class="badge badge-protein">Protein Rich</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">4:00 PM - Snack</div>
+                    <div class="meal-content">30g Roasted Makhana.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~100 kcal</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">7:30 PM - Dinner</div>
+                    <div class="meal-content"><strong>High Protein Chana Salad</strong> (100g Boiled Chana + 100g Veggies + 100g Curd).</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~250 kcal</span></div>
+                </div>
+            </div>
+
+            <!-- Saturday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <span class="day-name">Saturday</span>
+                    <div class="day-stats">
+                        <span class="stat-badge stat-cals">1250 kcal</span>
+                        <span class="stat-badge stat-prot">55g Prot</span>
+                    </div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">12:00 PM - Break Fast</div>
+                    <div class="meal-content"><strong>Little Millet</strong> (100g Cooked) + 200g Chole Curry.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~350 kcal</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">4:00 PM - Snack</div>
+                    <div class="meal-content"><strong>Sautéed Tofu</strong> (100g) with Garlic & Herbs.</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~140 kcal</span></div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-title">7:30 PM - Dinner</div>
+                    <div class="meal-content"><strong>Paneer Tikka</strong> (120g Paneer + 50g Veggies).</div>
+                    <div class="badges-wrapper"><span class="badge badge-cal">~350 kcal</span><span class="badge badge-protein">Cheat Meal Feel</span></div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-title">Guidelines</h3>
+        <div class="info-card" style="border: 1px solid rgba(250, 17, 79, 0.3); background: rgba(250, 17, 79, 0.1);">
+            <strong>⚠️ 1200 kcal Warning</strong>
+            <p>This is a low-calorie intake. If dizzy, add a fruit. Eat unlimited cucumbers.</p>
+        </div>
+    </div>
+
+    <!-- VIEW: WORKOUT (TIMER) -->
+    <div id="view-workout" class="view-section">
+        <header>
+            <h1>Workout</h1>
+            <h2>Brisk Walking</h2>
+        </header>
+
+        <div class="walking-tool-card">
+            <div class="timer-display" id="walk-timer">00:00</div>
+            
+            <div class="controls">
+                <button class="btn-round lap-btn" onclick="addLap()"><span>+</span></button>
+                <button class="btn-round start-btn" id="toggle-btn" onclick="toggleTimer()">▶</button>
+            </div>
+
+            <div class="lap-display">
+                <span class="count" id="lap-count">0</span>
+                <span class="label">LAPS / ROUNDS</span>
+            </div>
+
+            <div class="session-stats">
+                <div class="s-stat">
+                    <span class="s-val" id="est-cals" style="color: var(--fitness-red);">0</span>
+                    <span class="s-lbl">Est. Kcal</span>
+                </div>
+            </div>
+            
+            <button onclick="resetWalk()" style="background:none; border:none; color:var(--text-secondary); margin-top:20px; text-decoration:underline;">Reset Session</button>
+        </div>
+
+        <h3 class="section-title">Technique</h3>
+        <div class="info-card">
+            <ul class="technique-list">
+                <li><strong>Posture:</strong> Tall spine, eyes forward.</li>
+                <li><strong>Arms:</strong> Bent 90°, swing from shoulders.</li>
+                <li><strong>Strike:</strong> Heel to toe roll.</li>
+                <li><strong>Pace:</strong> 'Talk Test' - able to speak, not sing.</li>
+                <li><strong>Target:</strong> 45 Mins Daily (Morning).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- VIEW: TRACKER (WEIGHT) -->
+    <div id="view-tracker" class="view-section">
+        <header>
+            <h1>Progress</h1>
+            <h2>Weight Log</h2>
+        </header>
+
+        <div class="info-card" style="margin-bottom: 20px;">
+            <p style="margin:0; text-align:center;">Dec 24, 2025 — Jan 24, 2026</p>
+        </div>
+
+        <div id="tracker-container" class="tracker-grid">
+            <!-- JS Populated -->
+        </div>
+    </div>
+
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('diet', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 1a1 1 0 100 2 1 1 0 000-2zm-3 0a1 1 0 100 2 1 1 0 000-2zm-4 4a1 1 0 000 2h10a1 1 0 100-2H7zm0 4a1 1 0 100 2h10a1 1 0 100-2H7zm0 4a1 1 0 100 2h6a1 1 0 100-2H7z"/></svg>
+        <span>Plan</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('workout', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7z"/></svg>
+        <span>Workout</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('tracker', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+        <span>Progress</span>
+    </div>
+</nav>
+
+<!-- UTILS -->
+<div id="ios-install-prompt" class="ios-prompt">
+    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+        <strong>Install App</strong>
+        <span onclick="document.getElementById('ios-install-prompt').style.display='none'">✕</span>
+    </div>
+    <p>1. Tap <strong>Share</strong> button <br> 2. Tap <strong>Add to Home Screen</strong></p>
+</div>
+
+<div id="save-status" class="save-status">✓ Saved</div>
+
+<script>
+    // --- TAB NAVIGATION ---
+    function switchTab(tabId, element) {
+        // Hide all views
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        // Remove active class from nav items
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        
+        // Show target view
+        document.getElementById('view-' + tabId).classList.add('active');
+        // Activate target nav
+        element.classList.add('active');
+        
+        // Scroll top
+        document.querySelector('.app-content').scrollTop = 0;
+    }
+
+    // --- TIMER LOGIC (PERSISTENT) ---
+    const KEY_START_TIME = 'walkStartTime';
+    const KEY_ACCUMULATED_TIME = 'walkAccumulatedTime';
+    const KEY_IS_RUNNING = 'walkIsRunning';
+    const KEY_LAPS = 'walkLaps';
+
+    let timerInterval;
+    const timerDisplay = document.getElementById('walk-timer');
+    const lapCountDisplay = document.getElementById('lap-count');
+    const toggleBtn = document.getElementById('toggle-btn');
+    const calsDisplay = document.getElementById('est-cals');
+
+    initTimer();
+
+    function initTimer() {
+        const savedLaps = localStorage.getItem(KEY_LAPS);
+        if (savedLaps) lapCountDisplay.textContent = savedLaps;
+        
+        if (localStorage.getItem(KEY_IS_RUNNING) === 'true') {
+            setBtnStop();
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+            updateTimerDisplay();
+        } else {
+            updateTimerDisplay();
+        }
+    }
+
+    function toggleTimer() {
+        if (localStorage.getItem(KEY_IS_RUNNING) === 'true') {
+            // Pause
+            clearInterval(timerInterval);
+            const startTime = parseInt(localStorage.getItem(KEY_START_TIME) || Date.now());
+            const accumulated = parseInt(localStorage.getItem(KEY_ACCUMULATED_TIME) || 0);
+            localStorage.setItem(KEY_ACCUMULATED_TIME, accumulated + (Date.now() - startTime));
+            localStorage.setItem(KEY_IS_RUNNING, 'false');
+            localStorage.removeItem(KEY_START_TIME);
+            setBtnStart();
+            updateTimerDisplay();
+        } else {
+            // Start
+            localStorage.setItem(KEY_START_TIME, Date.now());
+            localStorage.setItem(KEY_IS_RUNNING, 'true');
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+            setBtnStop();
+        }
+    }
+
+    function updateTimerDisplay() {
+        let totalSeconds = 0;
+        const accumulated = parseInt(localStorage.getItem(KEY_ACCUMULATED_TIME) || 0);
+        
+        if (localStorage.getItem(KEY_IS_RUNNING) === 'true') {
+            const startTime = parseInt(localStorage.getItem(KEY_START_TIME) || Date.now());
+            totalSeconds = Math.floor((accumulated + (Date.now() - startTime)) / 1000);
+        } else {
+            totalSeconds = Math.floor(accumulated / 1000);
+        }
+
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        timerDisplay.textContent = `${pad(mins)}:${pad(secs)}`;
+        calsDisplay.textContent = Math.floor(mins * 8.5); 
+    }
+
+    function setBtnStart() { toggleBtn.innerHTML = "▶"; toggleBtn.classList.remove('stop-btn'); toggleBtn.classList.add('start-btn'); }
+    function setBtnStop() { toggleBtn.innerHTML = "◼"; toggleBtn.classList.remove('start-btn'); toggleBtn.classList.add('stop-btn'); }
+    function pad(val) { return val < 10 ? '0' + val : val; }
+    
+    function addLap() {
+        let l = parseInt(localStorage.getItem(KEY_LAPS) || 0) + 1;
+        localStorage.setItem(KEY_LAPS, l);
+        lapCountDisplay.textContent = l;
+    }
+
+    function resetWalk() {
+        clearInterval(timerInterval);
+        ['walkStartTime', 'walkAccumulatedTime', 'walkIsRunning', 'walkLaps'].forEach(k => localStorage.removeItem(k));
+        timerDisplay.textContent = "00:00";
+        lapCountDisplay.textContent = "0";
+        calsDisplay.textContent = "0";
+        setBtnStart();
+    }
+
+    // --- WEIGHT TRACKER LOGIC ---
+    const startDate = new Date('2025-12-24');
+    const endDate = new Date('2026-01-24');
+    const container = document.getElementById('tracker-container');
+    const storageKey = 'fatLossWeightTracker';
+    const saveStatus = document.getElementById('save-status');
+
+    let savedData = JSON.parse(localStorage.getItem(storageKey)) || {};
+    let currentDate = new Date(startDate);
+    let inputs = [];
+
+    function getDateKey(d) { return d.toISOString().split('T')[0]; }
+
+    while (currentDate <= endDate) {
+        const dateKey = getDateKey(currentDate);
+        const cell = document.createElement('div');
+        cell.className = 'tracker-cell';
+
+        const label = document.createElement('span');
+        label.className = 'tracker-date';
+        label.textContent = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'tracker-input';
+        input.placeholder = '--';
+        input.step = '0.1';
+        input.dataset.key = dateKey;
+        if (savedData[dateKey]) input.value = savedData[dateKey];
+
+        const badge = document.createElement('span');
+        badge.className = 'diff-badge';
+
+        input.addEventListener('input', (e) => {
+            savedData[dateKey] = e.target.value;
+            localStorage.setItem(storageKey, JSON.stringify(savedData));
+            calculateDiffs();
+            showSave();
+        });
+
+        cell.appendChild(label); cell.appendChild(input); cell.appendChild(badge);
+        container.appendChild(cell);
+        inputs.push({ input, badge });
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    function calculateDiffs() {
+        let lastVal = null;
+        inputs.forEach(({ input, badge }) => {
+            const val = parseFloat(input.value);
+            badge.className = 'diff-badge';
+            badge.textContent = '';
+            
+            if (!isNaN(val)) {
+                if (lastVal !== null) {
+                    const diff = val - lastVal;
+                    badge.textContent = diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+                    badge.classList.add(diff > 0 ? 'diff-gain' : (diff < 0 ? 'diff-loss' : 'diff-neutral'));
+                } else {
+                    badge.textContent = 'Start';
+                }
+                lastVal = val;
+            }
+        });
+    }
+
+    function showSave() {
+        saveStatus.classList.add('visible');
+        setTimeout(() => saveStatus.classList.remove('visible'), 2000);
+    }
+
+    calculateDiffs();
+
+    // iOS check
+    if (/iPhone|iPad/.test(navigator.userAgent) && !window.navigator.standalone) {
+        setTimeout(() => document.getElementById('ios-install-prompt').style.display = 'block', 2000);
+    }
+</script>
+
+</body>
+</html>
